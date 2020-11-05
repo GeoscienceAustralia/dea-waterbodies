@@ -1,4 +1,4 @@
-.. image:: Documentation_figures/dea_logo_wide.jpg
+.. image:: /Documentation_figures/dea_logo_wide.jpg
   :width: 900
   :alt: Digital Earth Australia logo
 
@@ -21,11 +21,11 @@ Digital Earth Australia Waterbodies uses Geoscience Australia’s archive of ove
 
 It supports users to understand and manage water across Australia. For example, users can gain insights into the severity and spatial distribution of drought, or identify potential water sources for aerial firefighting during bushfires.
 
-The tool uses a [water classification](https://www.ga.gov.au/dea/products/wofs) for every available Landsat satellite image and maps the locations of waterbodies across Australia. It provides a time series of wet surface area for waterbodies that are present more than 10% of the time and are larger than 3125m2 (5 Landsat pixels).
+The tool uses a `water classification <https://www.ga.gov.au/dea/products/wofs>`_ for every available Landsat satellite image and maps the locations of waterbodies across Australia. It provides a time series of wet surface area for waterbodies that are present more than 10% of the time and are larger than 3125m2 (5 Landsat pixels).
 
 The tool indicates changes in the wet surface area of waterbodies. This can be used to identify when waterbodies are increasing or decreasing in wet surface area.
 
-.. image:: Documentation_figures/DEAWaterbodiesESRIBasemap.jpeg
+.. image:: /Documentation_figures/DEAWaterbodiesESRIBasemap.jpeg
   :width: 900
   :alt: Digital Earth Australia Waterbodies
 *Digital Earth Australia Waterbodies. Waterbody polygons mapped by this product are shown in blue. There are almost 300,000 across Australia.*
