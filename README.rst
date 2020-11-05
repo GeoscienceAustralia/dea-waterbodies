@@ -28,4 +28,4 @@ The tool indicates changes in the wet surface area of waterbodies. This can be u
 .. image:: Documentation_figures/DEAWaterbodiesESRIBasemap.jpeg
   :width: 900
   :alt: Digital Earth Australia Waterbodies
-* Digital Earth Australia Waterbodies. Waterbody polygons mapped by this product are shown in blue. There are almost 300,000 across Australia.*
+*Digital Earth Australia Waterbodies. Waterbody polygons mapped by this product are shown in blue. There are almost 300,000 across Australia.*
