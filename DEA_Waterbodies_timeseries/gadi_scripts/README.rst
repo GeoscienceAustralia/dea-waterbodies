@@ -1,4 +1,4 @@
-.. image:: Documentation_figures/dea_logo_wide.jpg
+.. image:: ../../Documentation_figures/dea_logo_wide.jpg
   :width: 900
   :alt: Digital Earth Australia logo
 
