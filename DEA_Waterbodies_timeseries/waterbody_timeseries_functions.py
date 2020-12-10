@@ -66,7 +66,7 @@ def process_config(config_file):
     return config_dict
 
 
-def get_shapefile_list(config_dict, part, num_chunks):
+def get_shapefile_list(config_dict, part=1, num_chunks=1):
     output_dir = config_dict['output_dir']
     processed_file = config_dict['processed_file']
     # Get the shapefile's crs
