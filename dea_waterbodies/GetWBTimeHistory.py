@@ -15,7 +15,7 @@
 
 
 import sys
-from waterbody_timeseries_functions import *
+from .waterbody_timeseries_functions import *
 
 config_file = sys.argv[1]
 config_dict = process_config(config_file)
