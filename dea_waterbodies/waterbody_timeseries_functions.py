@@ -1,15 +1,16 @@
+import configparser
+import csv
+from datetime import datetime, timezone
+from dateutil import relativedelta, parser
+from math import ceil
+import os
+
 from datacube import Datacube
 from datacube.utils import geometry
 import fiona
-import rasterio.features
-import csv
-from math import ceil
-import os
-from shapely import geometry as shapely_geom
-from datetime import datetime, timezone
-import configparser
-from dateutil import relativedelta, parser
 import numpy
+import rasterio.features
+from shapely import geometry as shapely_geom
 
 
 def process_config(config_file):
@@ -112,10 +113,14 @@ def get_shapefile_list(config_dict, part=1, num_chunks=1):
             for shapes in shapes_list:
                 str_poly_name = shapes['properties'][id_field]
                 try:
-                    fpath = os.path.join(output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv')
-                except:
+                    fpath = os.path.join(
+                        output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv'
+                    )
+                except TypeError:
                     str_poly_name = str(int(str_poly_name)).zfill(6)
-                    fpath = os.path.join(output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv')
+                    fpath = os.path.join(
+                        output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv'
+                    )
 
                 if not os.path.exists(fpath):
                     missing_list.append(shapes)
@@ -128,22 +133,27 @@ def get_shapefile_list(config_dict, part=1, num_chunks=1):
         for shapes in shapes_list:
             str_poly_name = shapes['properties'][id_field]
             try:
-                fpath = os.path.join(output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv\n')
-            except:
+                fpath = os.path.join(
+                    output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv\n')
+            except TypeError:
                 str_poly_name = str(int(str_poly_name)).zfill(6)
-                fpath = os.path.join(output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv\n')
-            if not fpath in files:
+                fpath = os.path.join(
+                    output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv\n')
+            if fpath in files:
                 missing_list.append(shapes)
         shapes_list = missing_list
         print(f'{len(missing_list)} missing polygons from {processed_file}')
 
     if 'filter_state' in config_dict.keys():
-        shapes_list = [shape for shape in shapes_list if shape['properties']['STATE'] == config_dict['filter_state']]
+        shapes_list = [
+            shape for shape in shapes_list
+            if shape['properties']['STATE'] == config_dict['filter_state']]
 
     chunk_size = ceil(len(shapes_list) / num_chunks) + 1
     shapes_subset = shapes_list[(part - 1) * chunk_size: part * chunk_size]
 
-    print(f'The index we will use is {(part - 1) * chunk_size, part * chunk_size}')
+    _idx = (part - 1) * chunk_size, part * chunk_size
+    print(f'The index we will use is {_idx}')
     return shapes_subset, crs, id_field
 
 
@@ -158,10 +168,12 @@ def get_last_date(fpath, max_days=None):
             start_date = start_date + relativedelta.relativedelta(days=1)
             if max_days:
                 if (current_time - start_date).days > max_days:
-                    start_date = current_time - relativedelta.relativedelta(days=max_days)
+                    start_date = current_time - relativedelta.relativedelta(
+                        days=max_days)
             str_start_date = start_date.strftime('%Y-%m-%d')
             return str_start_date
-    except:
+    except:  # noqa: E722
+        print('Cannot find last date for', fpath)
         return None
 
 
@@ -174,20 +186,25 @@ def wofls_fuser(dest, src):
 # Define a function that does all of the work
 def generate_wb_timeseries(shapes, config_dict):
     """
-    This is where the code processing is actually done. This code takes in a polygon, and the
-    and a config dict which contains: shapefile's crs, output directory, id_field, time_span, and include_uncertainty
-    which says whether to include all data as well as an invalid pixel count which can be used for measuring uncertainty
-    performs a polygon drill into the wofs_albers product. The resulting
-    xarray, which contains the water classified pixels for that polygon over every available
-    timestep, is used to calculate the percentage of the water body that is wet at each time step.
-    The outputs are written to a csv file named using the polygon UID, which is a geohash of the polygon's centre coords.
+    This is where the code processing is actually done. This code takes in a
+    polygon, and the and a config dict which contains: shapefile's crs, output
+    directory, id_field, time_span, and include_uncertainty which says whether
+    to include all data as well as an invalid pixel count which can be used
+    for measuring uncertainty performs a polygon drill into the wofs_albers
+    product. The resulting xarray, which contains the water classified pixels
+    for that polygon over every available timestep, is used to calculate the
+    percentage of the water body that is wet at each time step. The outputs
+    are written to a csv file named using the polygon UID, which is a geohash
+    of the polygon's centre coords.
 
     Inputs:
     shapes - polygon to be interrogated
-    config_dict - many config settings including crs, id_field, time_span, shapefile
+    config_dict - many config settings including crs, id_field, time_span,
+                  shapefile
 
     Outputs:
-    Nothing is returned from the function, but a csv file is written out to disk
+    Nothing is returned from the function, but a csv file is written out to
+        disk
     """
     output_dir = config_dict['output_dir']
     crs = config_dict['crs']
@@ -206,10 +223,12 @@ def generate_wb_timeseries(shapes, config_dict):
         str_poly_name = shapes['properties'][id_field]
 
         try:
-            fpath = os.path.join(output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv')
-        except:
+            fpath = os.path.join(
+                output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv')
+        except TypeError:
             str_poly_name = str(int(str_poly_name)).zfill(6)
-            fpath = os.path.join(output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv')
+            fpath = os.path.join(
+                output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv')
         geom = geometry.Geometry(first_geometry, crs=crs)
         current_year = datetime.now().year
 
@@ -241,20 +260,25 @@ def generate_wb_timeseries(shapes, config_dict):
 
             # Set up the query, and load in all of the WOFS layers
             query = {'geopolygon': geom, 'time': time}
-            wofl = dc.load(product='wofs_albers', group_by='solar_day', fuse_func=wofls_fuser, **query)
+            wofl = dc.load(product='wofs_albers', group_by='solar_day',
+                           fuse_func=wofls_fuser, **query)
 
             if len(wofl.attrs) == 0:
                 print(f'There is no new data for {str_poly_name}')
                 return 2
-            # Make a mask based on the polygon (to remove extra data outside of the polygon)
-            mask = rasterio.features.geometry_mask([geom.to_crs(wofl.geobox.crs) for geoms in [geom]],
-                                                   out_shape=wofl.geobox.shape,
-                                                   transform=wofl.geobox.affine,
-                                                   all_touched=False,
-                                                   invert=True)
+            # Make a mask based on the polygon (to remove extra data
+            # outside of the polygon)
+            mask = rasterio.features.geometry_mask(
+                [geom.to_crs(wofl.geobox.crs) for geoms in [geom]],
+                out_shape=wofl.geobox.shape,
+                transform=wofl.geobox.affine,
+                all_touched=False,
+                invert=True)
             # mask the data to the shape of the polygon
-            # the geometry width and height must both be larger than one pixel to mask.
-            if geom.boundingbox.width > 25.3 and geom.boundingbox.height > 25.3:
+            # the geometry width and height must both be larger than one pixel
+            # to mask.
+            if (geom.boundingbox.width > 25.3 and
+                    geom.boundingbox.height > 25.3):
                 wofl_masked = wofl.water.where(mask)
             else:
                 wofl_masked = wofl.water
@@ -266,16 +290,24 @@ def generate_wb_timeseries(shapes, config_dict):
                 all_the_bit_flags = wofl_masked.isel(time=ix)
 
                 # Find all the wet/dry pixels for that timestep
-                lsa_wet = all_the_bit_flags.where(all_the_bit_flags == 136).count().item()
-                lsa_dry = all_the_bit_flags.where(all_the_bit_flags == 8).count().item()
-                sea_wet = all_the_bit_flags.where(all_the_bit_flags == 132).count().item()
-                sea_dry = all_the_bit_flags.where(all_the_bit_flags == 4).count().item()
-                sea_lsa_wet = all_the_bit_flags.where(all_the_bit_flags == 140).count().item()
-                sea_lsa_dry = all_the_bit_flags.where(all_the_bit_flags == 12).count().item()
-                wet_pixels = all_the_bit_flags.where(
-                    all_the_bit_flags == 128).count().item() + lsa_wet + sea_wet + sea_lsa_wet
-                dry_pixels = all_the_bit_flags.where(
-                    all_the_bit_flags == 0).count().item() + lsa_dry + sea_dry + sea_lsa_dry
+                lsa_wet = all_the_bit_flags.where(
+                    all_the_bit_flags == 136).count().item()
+                lsa_dry = all_the_bit_flags.where(
+                    all_the_bit_flags == 8).count().item()
+                sea_wet = all_the_bit_flags.where(
+                    all_the_bit_flags == 132).count().item()
+                sea_dry = all_the_bit_flags.where(
+                    all_the_bit_flags == 4).count().item()
+                sea_lsa_wet = all_the_bit_flags.where(
+                    all_the_bit_flags == 140).count().item()
+                sea_lsa_dry = all_the_bit_flags.where(
+                    all_the_bit_flags == 12).count().item()
+                wet_pixels = (all_the_bit_flags.where(
+                    all_the_bit_flags == 128).count().item() +
+                    lsa_wet + sea_wet + sea_lsa_wet)
+                dry_pixels = (all_the_bit_flags.where(
+                    all_the_bit_flags == 0).count().item()
+                    + lsa_dry + sea_dry + sea_lsa_dry)
 
                 # Count the number of masked observations
                 masked_all = all_the_bit_flags.count().item()
@@ -294,9 +326,11 @@ def generate_wb_timeseries(shapes, config_dict):
                     print(f'{str_poly_name} has divide by zero error')
 
                 # Append the percentages to a list for each timestep
-                # Filter out timesteps with < 90% valid observations. Add empty values for timesteps with < 90% valid.
-                # if you set 'UNCERTAINTY = True' in your config file then you will only filter out timesteps with
-                # 100% invalid pixels.  You will also record the number invalid pixels per timestep.
+                # Filter out timesteps with < 90% valid observations. Add
+                # empty values for timesteps with < 90% valid. if you set
+                # 'UNCERTAINTY = True' in your config file then you will
+                # only filter out timesteps with 100% invalid pixels.
+                # You will also record the number invalid pixels per timestep.
 
                 if unknown_percent < unknown_percent_threshold:
                     wb_capacity_pc.append(water_percent)
@@ -319,12 +353,14 @@ def generate_wb_timeseries(shapes, config_dict):
             valid_capacity_ct += wb_capacity_ct
             invalid_capacity_ct += wb_invalid_ct
             date_list += valid_obs.to_csv(None, header=False, index=False,
-                                          date_format="%Y-%m-%dT%H:%M:%SZ").split('\n')
+                                          date_format="%Y-%m-%dT%H:%M:%SZ"
+                                          ).split('\n')
             date_list.pop()
 
         if date_list:
             if include_uncertainty:
-                rows = zip(date_list, valid_capacity_pc, valid_capacity_ct, invalid_capacity_ct)
+                rows = zip(date_list, valid_capacity_pc, valid_capacity_ct,
+                           invalid_capacity_ct)
             else:
                 rows = zip(date_list, valid_capacity_pc, valid_capacity_ct)
             os.makedirs(os.path.dirname
@@ -347,4 +383,3 @@ def generate_wb_timeseries(shapes, config_dict):
         else:
             print(f'{str_poly_name} has no new good valid data')
         return True
-
