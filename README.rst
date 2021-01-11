@@ -25,6 +25,15 @@ The tool uses a `water classification <https://www.ga.gov.au/dea/products/wofs>`
 
 The tool indicates changes in the wet surface area of waterbodies. This can be used to identify when waterbodies are increasing or decreasing in wet surface area.
 
+Installation
+------------
+
+DEA Waterbodies has some requirements which can be installed with pip:
+
+.. code-block:: bash
+
+    pip install --extra-index-url="https://packages.dea.ga.gov.au" -r requirements.txt
+
 .. image:: figures/DEAWaterbodiesESRIBasemap.jpeg
   :width: 900
   :alt: Digital Earth Australia Waterbodies
