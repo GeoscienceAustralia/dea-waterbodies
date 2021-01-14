@@ -1,4 +1,15 @@
+__pycache__
 .ipynb_checkpoints
 .vscode
 _wb_outputs
 watercourses
+*.shp
+*.shx
+*.prj
+*.dbf
+*.cpg
+*.geojson
+*.csv
+*.gml
+*.graphml
+*.json
