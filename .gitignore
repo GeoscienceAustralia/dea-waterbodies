@@ -3,13 +3,19 @@ __pycache__
 .vscode
 _wb_outputs
 watercourses
+
+# shapefiles
+*.cpg
+*.dbf
+*.prj
 *.shp
 *.shx
-*.prj
-*.dbf
-*.cpg
-*.geojson
-*.csv
-*.gml
+
+# graphs
 *.graphml
+*.gml
+
+# csv and geojson
+*.csv
+*.geojson
 *.json
