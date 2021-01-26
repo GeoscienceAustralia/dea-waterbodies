@@ -1,4 +1,4 @@
-.. image:: Documentation_figures/dea_logo_wide.jpg
+.. image:: figures/dea_logo_wide.jpg
   :width: 900
   :alt: Digital Earth Australia logo
 
@@ -25,7 +25,16 @@ The tool uses a `water classification <https://www.ga.gov.au/dea/products/wofs>`
 
 The tool indicates changes in the wet surface area of waterbodies. This can be used to identify when waterbodies are increasing or decreasing in wet surface area.
 
-.. image:: Documentation_figures/DEAWaterbodiesESRIBasemap.jpeg
+Installation
+------------
+
+DEA Waterbodies has some requirements which can be installed with pip:
+
+.. code-block:: bash
+
+    pip install --extra-index-url="https://packages.dea.ga.gov.au" -r requirements.txt
+
+.. image:: figures/DEAWaterbodiesESRIBasemap.jpeg
   :width: 900
   :alt: Digital Earth Australia Waterbodies
 *Digital Earth Australia Waterbodies. Waterbody polygons mapped by this product are shown in blue. There are almost 300,000 across Australia.*
