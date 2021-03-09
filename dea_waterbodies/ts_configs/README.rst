@@ -18,5 +18,16 @@ The config options are:
     
  * ``FILTER_STATE`` (optional): [ ``ACT`` | ``NSW`` | ``NT`` | ``OT`` | ``QLD`` | ``SA`` | ``TAS`` | ``VIC`` | ``WA`` ]. This flag allows you to run the analysis for selected states only.
  * ``UNCERTAINTY``: [ ``TRUE`` | ``FALSE`` (default)]. This flag allows you to include uncertainties in the output timeseries. if you set ``UNCERTAINTY = True`` then you will only filter out timesteps with 100% invalid pixels. You will also record the number invalid pixels per timestep.
+
+
+Example config to run an append on all timeseries.
+
+ .. code-block:: bash
  
- 
+     ; config.ini
+     [DEFAULT]
+     SHAPEFILE=/g/data/r78/dea-waterbodies/DigitalEarthAustraliaWaterbodies.shp
+     OUTPUTDIR=/g/data/r78/dea-waterbodies/Timeseries/
+     TIME_SPAN=APPEND
+     SIZE=ALL
+     MISSING_ONLY=FALSE
