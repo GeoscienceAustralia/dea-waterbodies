@@ -12,7 +12,7 @@
 #PBS -m abe
 
 NCHUNKS=10
-CONFIG=../configs/config_huge.ini
+CONFIG=../ts_configs/config_huge.ini
 
 JOBDIR=$PWD
 
@@ -21,7 +21,7 @@ module load dea
 module load parallel
 
 cd $JOBDIR;
-parallel --delay 5 --retries 3 --load 100%  --colsep ',' python ../GetWBTimeHistory.py ::: $CONFIG,{1..10},$NCHUNKS
+parallel --delay 5 --retries 3 --load 100%  --colsep ',' python -m dea_waterbodies.make_time_series ::: $CONFIG,{1..10},$NCHUNKS
 
 wait;
 
