@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -ex
 
+export DATACUBE_CONFIG_PATH=.test_datacube.conf
 datacube system init
 # Add product definitions
 # WOfS
