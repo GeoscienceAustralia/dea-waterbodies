@@ -12,7 +12,7 @@
 #PBS -m abe
 
 NCHUNKS=24
-CONFIG=../configs/config_small_missing.ini
+CONFIG=../ts_configs/config_small_missing.ini
 JOBDIR=$PWD
 
 module use /g/data/v10/public/modules/modulefiles/
@@ -20,7 +20,7 @@ module load dea
 module load parallel
 
 cd $JOBDIR;
-parallel --delay 5 --retries 3 --load 100%  --colsep ',' python ../GetWBTimeHistory.py ::: $CONFIG,{1..24},$NCHUNKS
+parallel --delay 5 --retries 3 --load 100%  --colsep ',' python -m dea_waterbodies.make_time_series ::: $CONFIG,--part,{1..24},--chunks,$NCHUNKS
 
 wait;
 
