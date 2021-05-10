@@ -8,3 +8,4 @@ dependencies:
   - pip:
     - --extra-index-url="https://packages.dea.ga.gov.au"
     - -r requirements.txt
+    - odc-apps-dc-tools
