@@ -1,0 +1,10 @@
+name: dea-waterbodies-env
+channels:
+  - defaults
+dependencies:
+  - numpy
+  - geopandas
+  - gdal
+  - pip:
+    - python-geohash
+    - datacube
