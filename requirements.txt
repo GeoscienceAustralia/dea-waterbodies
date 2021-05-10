@@ -3,3 +3,4 @@ datacube
 geopandas
 numpy
 python-geohash
+rioxarray
