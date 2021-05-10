@@ -10,6 +10,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Set up Postgres
+      uses: harmon758/postgresql-action@v1
+      with:
+        postgresql version: '11'  # See https://hub.docker.com/_/postgres for available versions
     - name: Set up Python 3.6
       uses: actions/setup-python@v2
       with:
