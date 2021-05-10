@@ -7,4 +7,5 @@ dependencies:
   - gdal
   - pip:
     - python-geohash
+    - rioxarray
     - datacube
