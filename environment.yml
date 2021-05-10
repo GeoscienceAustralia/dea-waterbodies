@@ -6,8 +6,5 @@ dependencies:
   - geopandas
   - gdal
   - pip:
-    - python-geohash
-    - rioxarray
-    - datacube
     - --extra-index-url="https://packages.dea.ga.gov.au"
-    - git+https://github.com/GeoscienceAustralia/dea-notebooks.git#subdirectory=Tools
+    - -r requirements.txt
