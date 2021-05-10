@@ -20,7 +20,8 @@ from dea_tools.spatial import xr_vectorize, xr_rasterize
 
 
 # Sydney, Melbourne, Brisbane, Broadbeach, Surfers, Adelaide, Perth
-DEFAULT_SA3_URBAN = (11703, 20604, 30501, 30901, 30910, 40101, 50302)
+# This must be a list for pandas indexing to work.
+DEFAULT_SA3_URBAN = [11703, 20604, 30501, 30901, 30910, 40101, 50302]
 
 # Bounding box of Menindee Lakes.
 BBOX_MENINDEE = (141.93057, -32.74068, 142.93699, -32.03379)
