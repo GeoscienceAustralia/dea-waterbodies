@@ -41,6 +41,8 @@ jobs:
     - name: Test with pytest
       run: |
         export DATACUBE_CONFIG_PATH=.test_datacube.conf
+        export AWS_NO_SIGN_REQUEST=YES
+        export AWS_SECRET_ACCESS_KEY=fake
         echo DATACUBE_CONFIG_PATH is $DATACUBE_CONFIG_PATH
         echo AWS_DEFAULT_REGION is $AWS_DEFAULT_REGION
         echo First ten datasets...
