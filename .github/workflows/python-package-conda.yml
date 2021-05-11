@@ -40,5 +40,6 @@ jobs:
         ./setup_test_datacube.sh
     - name: Test with pytest
       run: |
+        export DATACUBE_CONFIG_PATH=.test_datacube.conf
         conda install pytest
         pytest
