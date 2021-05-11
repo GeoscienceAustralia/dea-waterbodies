@@ -41,5 +41,11 @@ jobs:
     - name: Test with pytest
       run: |
         export DATACUBE_CONFIG_PATH=.test_datacube.conf
+        echo DATACUBE_CONFIG_PATH is $DATACUBE_CONFIG_PATH
+        echo AWS_DEFAULT_REGION is $AWS_DEFAULT_REGION
+        echo First ten datasets...
+        datacube dataset search --limit 10
+        echo Installing pytest...
         conda install pytest
+        echo Starting tests...
         pytest
