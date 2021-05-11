@@ -33,7 +33,7 @@ ENV PATH=/env/bin:$PATH
 
 # Environment can be whatever is supported by setup.py
 # so, either deployment, test
-ARG ENVIRONMENT=test
+ARG ENVIRONMENT=deployment
 RUN echo "Environment is: $ENVIRONMENT"
 
 # Set up a nice workdir, and only copy the things we care about in
