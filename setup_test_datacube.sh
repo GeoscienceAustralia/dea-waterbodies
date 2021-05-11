@@ -2,6 +2,7 @@
 set -ex
 
 export DATACUBE_CONFIG_PATH=.test_datacube.conf
+export AWS_DEFAULT_REGION=ap-southeast-2
 datacube system init
 # Add product definitions
 # WOfS
