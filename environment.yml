@@ -1,0 +1,11 @@
+name: dea-waterbodies-env
+channels:
+  - defaults
+dependencies:
+  - numpy
+  - geopandas
+  - gdal
+  - pip:
+    - --extra-index-url="https://packages.dea.ga.gov.au"
+    - -r requirements.txt
+    - odc-apps-dc-tools
