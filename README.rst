@@ -8,6 +8,14 @@ Digital Earth Australia Waterbodies
 .. image:: https://img.shields.io/badge/License-Apache%202.0-blue.svg
   :target: https://opensource.org/licenses/Apache-2.0
   :alt: Digital Earth Australia logo
+  
+.. image:: https://github.com/GeoscienceAustralia/dea-waterbodies/actions/workflows/lint.yml/badge.svg
+  :target: https://github.com/GeoscienceAustralia/dea-waterbodies/actions/workflows/lint.yml
+  :alt: Linting status
+  
+.. image:: https://github.com/GeoscienceAustralia/dea-waterbodies/actions/workflows/test.yml/badge.svg
+  :target: https://github.com/GeoscienceAustralia/dea-waterbodies/actions/workflows/test.yml
+  :alt: Testing status
 
 **License:** The code in this repository is licensed under the `Apache License, Version 2.0 <https://www.apache.org/licenses/LICENSE-2.0>`_. Digital Earth Australia data is licensed under the `Creative Commons by Attribution 4.0 license <https://creativecommons.org/licenses/by/4.0/>`_.
 
