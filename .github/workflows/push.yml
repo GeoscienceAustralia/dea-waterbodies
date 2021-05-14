@@ -3,7 +3,7 @@ name: Push
 on:
   push:
     branches:
-      - main
+      - stable
     paths:
       - 'dea_waterbodies/**'
       - '.github/workflows/push.yml'
