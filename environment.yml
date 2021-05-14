@@ -6,6 +6,9 @@ dependencies:
   - geopandas
   - gdal
   - pip:
+    - datacube
+    - python-geohash
+    - rioxarray
+    - rasterstats
     - --extra-index-url="https://packages.dea.ga.gov.au"
-    - -r requirements.txt
     - odc-apps-dc-tools
