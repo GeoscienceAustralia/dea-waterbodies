@@ -2,7 +2,7 @@ FROM opendatacube/geobase:wheels as env_builder
 ARG py_env_path=/env
 
 COPY requirements.txt /tmp
-RUN env-build-tool new /tmp/requirements.txt ${py_env_path}
+RUN env-build-tool new /tmp/requirements.txt ${py_env_path} --extra-index-url="https://packages.dea.ga.gov.au"
 
 ENV PATH=${py_env_path}/bin:$PATH
 
