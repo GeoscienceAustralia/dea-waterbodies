@@ -29,8 +29,8 @@ jobs:
       run: |
         conda env update --file environment.yml --name base
     - name: Install dea-tools
-      run:
-        | ./install_dea_tools.sh
+      run: |
+        ./install_dea_tools.sh
     - name: Index into the Datacube
       run: |
         ./setup_test_datacube.sh
