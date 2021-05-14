@@ -1,0 +1,46 @@
+name: Test
+
+on: [push]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 5
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Postgres
+      uses: harmon758/postgresql-action@v1
+      with:
+        postgresql db: "datacube"
+        postgresql version: '11'  # See https://hub.docker.com/_/postgres for available versions
+        postgresql user: test
+        postgresql password: password
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.6
+    - name: Add conda to system path
+      run: |
+        # $CONDA is an environment variable pointing to the root of the miniconda directory
+        echo $CONDA/bin >> $GITHUB_PATH
+    - name: Install dependencies
+      run: |
+        conda env update --file environment.yml --name base
+    - name: Index into the Datacube
+      run: |
+        ./setup_test_datacube.sh
+    - name: Test with pytest
+      run: |
+        export DATACUBE_CONFIG_PATH=.test_datacube.conf
+        export AWS_NO_SIGN_REQUEST=YES
+        export AWS_SECRET_ACCESS_KEY=fake
+        echo DATACUBE_CONFIG_PATH is $DATACUBE_CONFIG_PATH
+        echo AWS_DEFAULT_REGION is $AWS_DEFAULT_REGION
+        echo First ten datasets...
+        datacube dataset search --limit 10
+        echo Installing pytest...
+        conda install pytest
+        echo Starting tests...
+        pytest

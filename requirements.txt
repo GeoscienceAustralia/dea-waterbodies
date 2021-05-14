@@ -4,3 +4,4 @@ geopandas
 numpy
 python-geohash
 rioxarray
+rasterstats
