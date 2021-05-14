@@ -13,7 +13,7 @@ on:
     types: [created, edited]
 
 env:
-  IMAGE_NAME: opendatacube/datacube-alchemist
+  IMAGE_NAME: GeoscienceAustralia/dea-waterbodies
 
 jobs:
   push:
@@ -36,6 +36,16 @@ jobs:
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_PASS }}
         image_tag: ${{ env.RELEASE }}
+    - name: Run Trivy vulnerability scanner for Release
+      uses: aquasecurity/trivy-action@master
+      if: github.event_name == 'release'
+      with:
+        image-ref: 'docker.io/GeoscienceAustralia/dea-waterbodies:${{ env.RELEASE }}'
+        format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        vuln-type: 'os,library'
+        severity: 'CRITICAL,HIGH'
 
     - name: Get git commit hash for push to main
       if: github.event_name != 'release'
@@ -50,3 +60,13 @@ jobs:
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_PASS }}
         image_tag: latest,${{ env.GITHASH }}
+    - name: Run Trivy vulnerability scanner for push to main
+      uses: aquasecurity/trivy-action@master
+      if: github.event_name != 'release'
+      with:
+        image-ref: 'docker.io/GeoscienceAustralia/dea-waterbodies:${{ env.GITHASH }}'
+        format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        vuln-type: 'os,library'
+        severity: 'CRITICAL,HIGH'
