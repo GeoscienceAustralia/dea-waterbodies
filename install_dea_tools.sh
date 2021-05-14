@@ -6,5 +6,5 @@ git sparse-checkout init
 git sparse-checkout set Tools
 git checkout develop
 git sparse-checkout disable
-pip install -e Tools
+pip install -e Tools --extra-index-url="https://packages.dea.ga.gov.au"
 cd ..
