@@ -13,7 +13,7 @@ on:
     types: [created, edited]
 
 env:
-  IMAGE_NAME: GeoscienceAustralia/dea-waterbodies
+  IMAGE_NAME: geoscienceaustralia/dea-waterbodies
 
 jobs:
   push:
@@ -40,7 +40,7 @@ jobs:
       uses: aquasecurity/trivy-action@master
       if: github.event_name == 'release'
       with:
-        image-ref: 'docker.io/GeoscienceAustralia/dea-waterbodies:${{ env.RELEASE }}'
+        image-ref: 'docker.io/geoscienceaustralia/dea-waterbodies:${{ env.RELEASE }}'
         format: 'table'
         exit-code: '1'
         ignore-unfixed: true
@@ -64,7 +64,7 @@ jobs:
       uses: aquasecurity/trivy-action@master
       if: github.event_name != 'release'
       with:
-        image-ref: 'docker.io/GeoscienceAustralia/dea-waterbodies:${{ env.GITHASH }}'
+        image-ref: 'docker.io/geoscienceaustralia/dea-waterbodies:${{ env.GITHASH }}'
         format: 'table'
         exit-code: '1'
         ignore-unfixed: true
