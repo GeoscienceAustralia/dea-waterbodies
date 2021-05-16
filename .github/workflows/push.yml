@@ -59,12 +59,12 @@ jobs:
         image_name: ${{ env.IMAGE_NAME }}
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_PASS }}
-        image_tag: latest,${{ env.GITHASH }}
+        image_tag: latest,${{ env.RELEASE }}
     - name: Run Trivy vulnerability scanner for push to main
       uses: aquasecurity/trivy-action@master
       if: github.event_name != 'release'
       with:
-        image-ref: 'docker.io/geoscienceaustralia/dea-waterbodies:${{ env.GITHASH }}'
+        image-ref: 'docker.io/geoscienceaustralia/dea-waterbodies:${{ env.RELEASE }}'
         format: 'table'
         exit-code: '1'
         ignore-unfixed: true
