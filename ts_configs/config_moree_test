@@ -1,6 +1,6 @@
 ; config_moree_test.ini
 [DEFAULT]
-SHAPEFILE=https://data.dea.ga.gov.au/projects/WaterBodies/moree-test/AusWaterBodies_Moree.geojson
+SHAPEFILE=https://data.dea.ga.gov.au/projects/WaterBodies/moree-test/AusWaterBodies_Moree.shp
 OUTPUTDIR=./moree-test/
 TIME_SPAN=ALL
 MISSING_ONLY=FALSE
