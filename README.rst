@@ -46,4 +46,3 @@ DEA Waterbodies has some requirements which can be installed with pip:
   :width: 900
   :alt: Digital Earth Australia Waterbodies
 *Digital Earth Australia Waterbodies. Waterbody polygons mapped by this product are shown in blue. There are almost 300,000 across Australia.*
- 
