@@ -1,4 +1,5 @@
 datacube
+fsspec==0.8.0
 geopandas
 numpy
 python-geohash
