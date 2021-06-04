@@ -7,9 +7,9 @@ dependencies:
   - gdal
   - pip:
     - datacube
+    - fsspec==0.8.0
     - python-geohash
     - rioxarray
-    - fsspec==0.8.0
     - rasterstats
     - --extra-index-url="https://packages.dea.ga.gov.au"
     - odc-apps-dc-tools
