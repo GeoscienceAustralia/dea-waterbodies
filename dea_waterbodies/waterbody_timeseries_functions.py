@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from dateutil import relativedelta, parser
 from math import ceil
 import os
-
+import fsspec
 from datacube import Datacube
 from datacube.utils import geometry
 import fiona
@@ -129,18 +129,20 @@ def get_shapefile_list(config_dict, part=1, num_chunks=1):
 
     if len(processed_file) > 1:
         missing_list = []
-        files = open(processed_file, 'r').readlines()
-        for shapes in shapes_list:
-            str_poly_name = shapes['properties'][id_field]
-            try:
-                fpath = os.path.join(
-                    output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv\n')
-            except TypeError:
-                str_poly_name = str(int(str_poly_name)).zfill(6)
-                fpath = os.path.join(
-                    output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv\n')
-            if fpath in files:
-                missing_list.append(shapes)
+        of = fsspec.open(processed_file, 'r')
+        with of as f:
+            f.readlines()
+            for shapes in shapes_list:
+                str_poly_name = shapes['properties'][id_field]
+                try:
+                    fpath = os.path.join(
+                        output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv\n')
+                except TypeError:
+                    str_poly_name = str(int(str_poly_name)).zfill(6)
+                    fpath = os.path.join(
+                        output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv\n')
+                if fpath in files:
+                    missing_list.append(shapes)
         shapes_list = missing_list
         print(f'{len(missing_list)} missing polygons from {processed_file}')
 
@@ -160,7 +162,8 @@ def get_shapefile_list(config_dict, part=1, num_chunks=1):
 def get_last_date(fpath, max_days=None):
     try:
         current_time = datetime.now(timezone.utc)
-        with open(fpath, 'r') as f:
+        of = fsspec.open(fpath, 'r')
+        with of as f:
             lines = f.read().splitlines()
             last_line = lines[-1]
             last_date = last_line.split(',')[0]
@@ -366,12 +369,14 @@ def generate_wb_timeseries(shapes, config_dict):
             os.makedirs(os.path.dirname
                         (fpath), exist_ok=True)
             if time_span == 'APPEND':
-                with open(fpath, 'a') as f:
+                of = fsspec.open(fpath, 'a')
+                with of as f:
                     writer = csv.writer(f)
                     for row in rows:
                         writer.writerow(row)
             else:
-                with open(fpath, 'w') as f:
+                of = fsspec.open(fpath, 'w')
+                with of as f:
                     writer = csv.writer(f)
                     headings = ['Observation Date', 'Wet pixel percentage',
                                 'Wet pixel count (n = {0})'.format(masked_all)]
