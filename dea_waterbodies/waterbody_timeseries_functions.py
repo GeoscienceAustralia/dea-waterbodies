@@ -131,7 +131,7 @@ def get_shapefile_list(config_dict, part=1, num_chunks=1):
         missing_list = []
         of = fsspec.open(processed_file, 'r')
         with of as f:
-            f.readlines()
+            files = f.readlines()
             for shapes in shapes_list:
                 str_poly_name = shapes['properties'][id_field]
                 try:
