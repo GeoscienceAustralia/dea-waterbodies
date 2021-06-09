@@ -12,6 +12,11 @@ import numpy
 import rasterio.features
 from shapely import geometry as shapely_geom
 
+import logging
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(name)s %(levelname)s:%(message)s')
+logger = logging.getLogger(__name__)
+
 
 def process_config(config_file):
     config = configparser.ConfigParser()
@@ -93,7 +98,7 @@ def get_shapefile_list(config_dict, part=1, num_chunks=1):
             if shapely_geom.shape(shapes['geometry']).envelope.area <= 200000:
                 newlist.append(shapes)
         shapes_list = newlist
-        print(f'{len(newlist)} small polygons')
+        logger.info(f'{len(newlist)} small polygons')
 
     # not used if using huge mem
     if config_dict['size'] == 'HUGE':
@@ -102,9 +107,9 @@ def get_shapefile_list(config_dict, part=1, num_chunks=1):
             if shapely_geom.shape(shapes['geometry']).envelope.area > 200000:
                 newlist.append(shapes)
         shapes_list = newlist
-        print(f'{len(newlist)} huge polygons')
+        logger.info(f'{len(newlist)} huge polygons')
 
-    print('missing_only', config_dict['missing_only'])
+    logger.info('missing_only', config_dict['missing_only'])
     if config_dict['missing_only']:
         print('missing_only', config_dict['missing_only'])
         if len(processed_file) < 2:
@@ -125,7 +130,7 @@ def get_shapefile_list(config_dict, part=1, num_chunks=1):
                 if not os.path.exists(fpath):
                     missing_list.append(shapes)
             shapes_list = missing_list
-            print(f'{len(missing_list)} missing polygons')
+            logger.info(f'{len(missing_list)} missing polygons')
 
     if len(processed_file) > 1:
         missing_list = []
@@ -144,7 +149,7 @@ def get_shapefile_list(config_dict, part=1, num_chunks=1):
                 if fpath in files:
                     missing_list.append(shapes)
         shapes_list = missing_list
-        print(f'{len(missing_list)} missing polygons from {processed_file}')
+        logger.info(f'{len(missing_list)} missing polygons from {processed_file}')
 
     if 'filter_state' in config_dict.keys():
         shapes_list = [
@@ -155,7 +160,7 @@ def get_shapefile_list(config_dict, part=1, num_chunks=1):
     shapes_subset = shapes_list[(part - 1) * chunk_size: part * chunk_size]
 
     _idx = (part - 1) * chunk_size, part * chunk_size
-    print(f'The index we will use is {_idx}')
+    logger.info(f'The index we will use is {_idx}')
     return shapes_subset, crs, id_field
 
 
@@ -174,9 +179,10 @@ def get_last_date(fpath, max_days=None):
                     start_date = current_time - relativedelta.relativedelta(
                         days=max_days)
             str_start_date = start_date.strftime('%Y-%m-%d')
+            logger.debug(f'Start date is {str_start_date}')
             return str_start_date
     except:  # noqa: E722
-        print('Cannot find last date for', fpath)
+        logger.debug(f'Cannot find last date for {fpath}')
         return None
 
 
@@ -244,7 +250,7 @@ def generate_wb_timeseries(shapes, config_dict):
         elif time_span == 'APPEND':
             start_date = get_last_date(fpath)
             if start_date is None:
-                print(f'There is no csv for {str_poly_name}')
+                logger.debug(f'There is no csv for {str_poly_name}')
                 return 1
             time_periods = [(start_date, str(current_year))]
         elif time_span == 'CUSTOM':
@@ -267,7 +273,7 @@ def generate_wb_timeseries(shapes, config_dict):
                            fuse_func=wofls_fuser, **query)
 
             if len(wofl.attrs) == 0:
-                print(f'There is no new data for {str_poly_name}')
+                logger.info(f'There is no new data for {str_poly_name}')
                 return 2
             # Make a mask based on the polygon (to remove extra data
             # outside of the polygon)
@@ -326,7 +332,7 @@ def generate_wb_timeseries(shapes, config_dict):
                     dry_percent = 0.0
                     unknown_percent = 100.0
                     missing_pixels = masked_all
-                    print(f'{str_poly_name} has divide by zero error')
+                    logger.debug(f'{str_poly_name} has divide by zero error')
 
                 # Append the percentages to a list for each timestep
                 # Filter out timesteps with < 90% valid observations. Add
@@ -386,5 +392,5 @@ def generate_wb_timeseries(shapes, config_dict):
                     for row in rows:
                         writer.writerow(row)
         else:
-            print(f'{str_poly_name} has no new good valid data')
+            logger.info(f'{str_poly_name} has no new good valid data')
         return True
