@@ -17,8 +17,12 @@ Geoscience Australia - 2021
 """
 
 import sys
+import logging
 
 import click
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(name)s %(levelname)s:%(message)s')
+logger = logging.getLogger(__name__)
 
 @click.command()
 @click.argument('config_file')
@@ -54,7 +58,11 @@ def main(config_file, part=1, chunks=1):
 
     # Loop through the polygons and write out a csv of waterbody percentage area full and wet pixel count
     # process each polygon. attempt each polygon 2 times
-    for shapes in shapes_subset:
+    for i, shapes in enumerate(shapes_subset):
+        logger.info('Processing {} ({}/{})'.format(
+            shapes['properties'][config_dict['id_field']],
+            i + 1,
+            len(shapes_subset)))
         result = dw_wtf.generate_wb_timeseries(shapes, config_dict)
         if not result:
             result = dw_wtf.generate_wb_timeseries(shapes, config_dict)
