@@ -11,6 +11,7 @@ dependencies:
     - python-geohash
     - rioxarray
     - boto3
+    - s3fs
     - rasterstats
     - --extra-index-url="https://packages.dea.ga.gov.au"
     - odc-apps-dc-tools
