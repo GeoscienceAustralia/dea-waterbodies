@@ -1,50 +1,50 @@
-FROM opendatacube/geobase:wheels as env_builder
 ARG py_env_path=/env
+ARG V_BASE=3.3.0
 
-COPY requirements.txt /tmp
-RUN env-build-tool new /tmp/requirements.txt ${py_env_path}
+FROM opendatacube/geobase-builder:${V_BASE} as env_builder
+ENV LC_ALL=C.UTF-8
 
-ENV PATH=${py_env_path}/bin:$PATH
+# Install our Python requirements
+COPY requirements.txt /conf/
+ARG py_env_path
+RUN echo "" > /conf/constraints.txt
+RUN cat requirements.txt \
+  && env-build-tool new /conf/requirements.txt /conf/constraints.txt ${py_env_path} \
+  && rm -rf /root/.cache/pip \
+  && echo done
+
+# Below is the actual image that does the running
+FROM opendatacube/geobase-runner:${V_BASE}
+ENV DEBIAN_FRONTEND=noninteractive \
+    LC_ALL=C.UTF-8 \
+    LANG=C.UTF-8
+    
+RUN apt-get update \
+    && apt-get install -y \
+         libtiff-tools \
+         git \
+         htop \
+         tmux \
+         wget \
+         curl \
+         nano \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /tmp
+
+ARG py_env_path
+COPY --from=env_builder $py_env_path $py_env_path
+ENV PATH="${py_env_path}/bin:${PATH}"
 
 # Copy source code and install it
 RUN mkdir -p /code
 WORKDIR /code
 ADD . /code
 
+RUN echo "Installing dea-waterbodies through the Dockerfile."
 RUN pip install --use-feature=2020-resolver --extra-index-url="https://packages.dea.ga.gov.au" .
 
-# Make sure it's working first
+RUN env && echo $PATH && pip freeze && pip check
+
+# Make sure it's working
 # RUN dea-waterbodies --version
-
-# Build the production runner stage from here
-FROM opendatacube/geobase:runner
-
-ENV LC_ALL=C.UTF-8 \
-    DEBIAN_FRONTEND=noninteractive \
-    SHELL=bash
-
-RUN apt-get update \
-    && apt-get install -y \
-    git vim nano fish wget postgresql \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY --from=env_builder /env /env
-ENV PATH=/env/bin:$PATH
-
-# Environment can be whatever is supported by setup.py
-# so, either deployment, test
-ARG ENVIRONMENT=deployment
-RUN echo "Environment is: $ENVIRONMENT"
-
-# Set up a nice workdir, and only copy the things we care about in
-ENV APPDIR=/code
-RUN mkdir -p $APPDIR
-WORKDIR $APPDIR
-ADD . $APPDIR
-
-# These ENVIRONMENT flags make this a bit complex, but basically, if we are in dev
-# then we want to link the source (with the -e flag) and if we're in prod, we
-# want to delete the stuff in the /code folder to keep it simple.
-RUN if [ "$ENVIRONMENT" = "deployment" ] ; then rm -rf $APPDIR ; \
-    else pip install --extra-index-url="https://packages.dea.ga.gov.au" --editable .[$ENVIRONMENT] ; \
-    fi
