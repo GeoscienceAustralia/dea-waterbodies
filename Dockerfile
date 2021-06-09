@@ -8,7 +8,7 @@ ENV LC_ALL=C.UTF-8
 COPY requirements.txt /conf/
 ARG py_env_path
 RUN echo "" > /conf/constraints.txt
-RUN cat requirements.txt \
+RUN cat /conf/requirements.txt \
   && env-build-tool new /conf/requirements.txt /conf/constraints.txt ${py_env_path} \
   && rm -rf /root/.cache/pip \
   && echo done
