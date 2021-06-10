@@ -27,7 +27,7 @@ def process_config(config_file):
 
     if 'START_DATE' in config['DEFAULT'].keys():
         config_dict['start_dt'] = config['DEFAULT']['START_DATE']
-        print('START_DATE', start_date)
+        logger.info(f'START_DATE {start_date}')
 
     if 'END_DATE' in config['DEFAULT'].keys():
         config_dict['end_date'] = config['DEFAULT']['END_DATE']
@@ -108,11 +108,10 @@ def get_shapefile_list(config_dict, part=1, num_chunks=1):
         shapes_list = newlist
         logger.info(f'{len(newlist)} huge polygons')
 
-    logger.info('missing_only', config_dict['missing_only'])
     if config_dict['missing_only']:
-        print('missing_only', config_dict['missing_only'])
+        logger.info(f'missing_only {config_dict['missing_only']}')
         if len(processed_file) < 2:
-            print('processed_file', processed_file)
+            logger.info(f'processed_file {processed_file}')
             missing_list = []
             for shapes in shapes_list:
                 str_poly_name = shapes['properties'][id_field]
