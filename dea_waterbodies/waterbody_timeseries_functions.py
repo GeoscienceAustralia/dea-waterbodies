@@ -109,7 +109,7 @@ def get_shapefile_list(config_dict, part=1, num_chunks=1):
         logger.info(f'{len(newlist)} huge polygons')
 
     if config_dict['missing_only']:
-        logger.info(f'missing_only {config_dict['missing_only']}')
+        logger.info(f"missing_only {config_dict['missing_only']}")
         if len(processed_file) < 2:
             logger.info(f'processed_file {processed_file}')
             missing_list = []
@@ -139,15 +139,18 @@ def get_shapefile_list(config_dict, part=1, num_chunks=1):
                 str_poly_name = shapes['properties'][id_field]
                 try:
                     fpath = os.path.join(
-                        output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv\n')
+                        output_dir,
+                        f'{str_poly_name[0:4]}/{str_poly_name}.csv\n')
                 except TypeError:
                     str_poly_name = str(int(str_poly_name)).zfill(6)
                     fpath = os.path.join(
-                        output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv\n')
+                        output_dir,
+                        f'{str_poly_name[0:4]}/{str_poly_name}.csv\n')
                 if fpath in files:
                     missing_list.append(shapes)
         shapes_list = missing_list
-        logger.info(f'{len(missing_list)} missing polygons from {processed_file}')
+        logger.info(
+            f'{len(missing_list)} missing polygons from {processed_file}')
 
     if 'filter_state' in config_dict.keys():
         shapes_list = [
