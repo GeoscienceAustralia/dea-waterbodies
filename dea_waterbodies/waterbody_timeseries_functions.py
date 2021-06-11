@@ -126,8 +126,11 @@ def get_shapefile_list(config_dict, part=1, num_chunks=1):
                     fpath = os.path.join(
                         output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv'
                     )
-
-                if not os.path.exists(fpath):
+                try:
+                    of2 = fsspec.open(fpath)
+                    with of2 as f2:
+                        f2.close()
+                except FileNotFoundError:
                     missing_list.append(shapes)
             shapes_list = missing_list
             logger.info(f'{len(missing_list)} missing polygons')
