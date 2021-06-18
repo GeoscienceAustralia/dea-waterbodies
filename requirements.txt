@@ -7,5 +7,6 @@ rioxarray
 rasterstats
 s3fs
 boto3
+pytest
 --extra-index-url https://packages.dea.ga.gov.au
 git+https://github.com/GeoscienceAustralia/dea-notebooks.git#subdirectory=Tools
