@@ -7,7 +7,8 @@ docker-compose exec -T index datacube system init --no-default-types --no-init-u
 docker-compose exec -T index datacube metadata add "$METADATA_CATALOG"
 # Index products we care about for dea-waterbodies
 docker-compose exec -T index wget "$PRODUCT_CATALOG" -O product_list.csv
-docker-compose exec -T index bash -c "tail -n+2 product_list.csv | grep 'wofs_albers\|wofs_filtered_summary\|wofs_summary\|geodata_coast_100k' | awk -F , '{print \$2}' | xargs datacube -v product add"
+docker-compose exec -T index bash -c "tail -n+2 product_list.csv | grep 'wofs_albers\|wofs_filtered_summary\|wofs_summary' | awk -F , '{print \$2}' | xargs datacube -v product add"
+datacube product add https://explorer.sandbox.dea.ga.gov.au/products/geodata_coast_100k.odc-product.yaml
 
 # Index WOfS and Coastline
 cat > index_tiles.sh <<EOF
