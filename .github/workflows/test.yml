@@ -32,7 +32,7 @@ jobs:
     - name: Test dea-waterbodies image
       run: |
           docker-compose up -d
-          ./setup-db.sh
+          ./setup_test_datacube.sh
           docker-compose exec dea-waterbodies pytest -v --cov=./dea-waterbodies --cov-report=xml ./
           docker-compose down
       
