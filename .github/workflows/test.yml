@@ -2,62 +2,38 @@ name: Test
 
 on: [push]
 
-jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 5
+env:
+  ORG: geoscienceaustralia
+  IMAGE: dea-waterbodies
+  METADATA_CATALOG: https://raw.githubusercontent.com/GeoscienceAustralia/dea-config/a4f39b485b33608a016032d9987251881fec4b6f/workspaces/sandbox-metadata.yaml
+  PRODUCT_CATALOG: https://raw.githubusercontent.com/GeoscienceAustralia/dea-config/a4f39b485b33608a016032d9987251881fec4b6f/workspaces/sandbox-products.csv
 
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Postgres
-      uses: harmon758/postgresql-action@v1
-      with:
-        postgresql db: "datacube"
-        postgresql version: '11'  # See https://hub.docker.com/_/postgres for available versions
-        postgresql user: test
-        postgresql password: password
-    - name: Set up Python 3.6
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.6
-    - name: Cache pip
-      uses: actions/cache@v2
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-    - name: Cache conda
-      uses: actions/cache@v2
-      with:
-        path: $CONDA
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/environment.yml') }}
-        restore-keys: |
-          ${{ runner.os }}-conda-
-    - name: Add conda to system path
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Pre-pull layers
+      run: docker-compose pull
+      
+      
+    - name: Activate Docker cache
+      uses: satackey/action-docker-layer-caching@v0.0.8
+      # Ignore the failure of a step and avoid terminating the job.
+      continue-on-error: true
+
+    - name: Build dea-waterbodies image
       run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        echo $CONDA/bin >> $GITHUB_PATH
-    - name: Install dependencies
+        docker-compose build
+    
+    - name: Test dea-waterbodies image
       run: |
-        conda env update --file environment.yml --name base
-    - name: Install dea-tools
-      run: |
-        ./install_dea_tools.sh
-    - name: Index into the Datacube
-      run: |
-        ./setup_test_datacube.sh
-    - name: Test with pytest
-      run: |
-        export DATACUBE_CONFIG_PATH=.test_datacube.conf
-        export AWS_NO_SIGN_REQUEST=YES
-        export AWS_SECRET_ACCESS_KEY=fake
-        echo DATACUBE_CONFIG_PATH is $DATACUBE_CONFIG_PATH
-        echo AWS_DEFAULT_REGION is $AWS_DEFAULT_REGION
-        echo Installing pytest...
-        conda install pytest
-        echo Installing dea-waterbodies...
-        pip install --no-dependencies .
-        echo Starting tests...
-        pytest
+          docker-compose up -d
+          ./setup_test_datacube.sh
+          docker-compose exec -T waterbodies bash -c "pytest -v"
+          docker-compose down
+      
+    

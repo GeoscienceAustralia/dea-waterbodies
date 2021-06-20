@@ -6,7 +6,11 @@ services:
     ports:
       - "5434:5432"
     environment:
-      POSTGRES_PASSWORD: opendatacubepassword
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=opendatacubepassword
+      - POSTGRES_USER=postgres
+    expose:
+      - 5432
     restart: always
 
   waterbodies:
@@ -20,13 +24,14 @@ services:
       - DB_PASSWORD=opendatacubepassword
       - DB_DATABASE=postgres
       - AWS_DEFAULT_REGION=ap-southeast-2
-      - AWS_ACCESS_KEY_ID=${ODC_ACCESS_KEY}
-      - AWS_SECRET_ACCESS_KEY=${ODC_SECRET_KEY}
+      - AWS_ACCESS_KEY_ID=fake_id
+      - AWS_SECRET_ACCESS_KEY=fake_key
       - AWS_NO_SIGN_REQUEST=YES
     volumes:
       - .:/code
     depends_on:
       - postgres
+    command: ["/bin/sh", "-ec", "while :; do echo '.'; sleep 180 ; done"]
 
   index:
      image: opendatacube/datacube-index:0.0.13
