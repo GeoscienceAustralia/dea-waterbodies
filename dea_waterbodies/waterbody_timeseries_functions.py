@@ -1,4 +1,3 @@
-import configparser
 import csv
 from datetime import datetime, timezone
 from dateutil import relativedelta, parser
@@ -15,60 +14,6 @@ from shapely import geometry as shapely_geom
 import logging
 
 logger = logging.getLogger(__name__)
-
-
-def process_config(config_file):
-    config = configparser.ConfigParser()
-    config_dict = {}
-    config.read(config_file)
-    start_date = '1986'
-    if 'SHAPEFILE' in config['DEFAULT'].keys():
-        config_dict['shape_file'] = config['DEFAULT']['SHAPEFILE']
-
-    if 'START_DATE' in config['DEFAULT'].keys():
-        config_dict['start_dt'] = config['DEFAULT']['START_DATE']
-        logger.info(f'START_DATE {start_date}')
-
-    if 'END_DATE' in config['DEFAULT'].keys():
-        config_dict['end_date'] = config['DEFAULT']['END_DATE']
-    if 'SIZE' in config['DEFAULT'].keys():
-        config_dict['size'] = config['DEFAULT']['SIZE'].upper()
-    else:
-        config_dict['size'] = 'ALL'
-    if 'MISSING_ONLY' in config['DEFAULT'].keys():
-        if config['DEFAULT']['MISSING_ONLY'].upper() == 'TRUE':
-            config_dict['missing_only'] = True
-        else:
-            config_dict['missing_only'] = False
-    else:
-        config_dict['missing_only'] = False
-
-    if 'PROCESSED_FILE' in config['DEFAULT'].keys():
-        if len(config['DEFAULT']['PROCESSED_FILE']) > 2:
-            config_dict['processed_file'] = config['DEFAULT']['PROCESSED_FILE']
-        else:
-            config_dict['processed_file'] = ''
-    else:
-        config_dict['processed_file'] = ''
-
-    if 'TIME_SPAN' in config['DEFAULT'].keys():
-        config_dict['time_span'] = config['DEFAULT']['TIME_SPAN'].upper()
-    else:
-        config_dict['time_span'] = 'ALL'
-
-    if 'OUTPUTDIR' in config['DEFAULT'].keys():
-        config_dict['output_dir'] = config['DEFAULT']['OUTPUTDIR']
-
-    if 'FILTER_STATE' in config['DEFAULT'].keys():
-        config_dict['filter_state'] = config['DEFAULT']['FILTER_STATE']
-
-    if 'UNCERTAINTY' in config['DEFAULT'].keys():
-        if config['DEFAULT']['UNCERTAINTY'].upper() == 'TRUE':
-            config_dict['include_uncertainty'] = True
-    else:
-        config_dict['include_uncertainty'] = False
-
-    return config_dict
 
 
 def get_shapefile_list(config_dict, part=1, num_chunks=1):
