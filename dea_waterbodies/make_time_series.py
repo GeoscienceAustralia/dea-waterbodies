@@ -91,7 +91,7 @@ def process_config(config_file):
 @click.option('--size', type=click.Choice(['ALL', 'SMALL', 'HUGE']))
 @click.option('--missing-only/--all', default=False)
 @click.option('--skip', type=click.Path())
-@click.option('--time-span', '--time', type=click.Choice(['ALL', 'APPEND', 'CUSTOM']))
+@click.option('--time-span', type=click.Choice(['ALL', 'APPEND', 'CUSTOM']))
 @click.option('--output', type=click.Path())
 @click.option('--state', type=click.Choice(['ACT', 'NSW', 'NT', 'OT', 'QLD', 'SA', 'TAS', 'VIC', 'WA']))
 @click.option('--no-mask-obs/--mask-obs', default=False)
