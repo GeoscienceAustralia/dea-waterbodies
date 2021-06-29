@@ -139,8 +139,20 @@ def main(ids, config, shapefile, start, end, size,
         if cli_val:
             config_dict[config_p] = cli_val
 
-    print(config_dict)
-    raise NotImplementedError()
+    # Additional validation of parameters.
+    # If time_span is CUSTOM, start and end should also be specified.
+    if config_dict['time_span'] == 'CUSTOM':
+        if not config_dict['start_dt'] or not config_dict['end_date']:
+            raise click.ClickException('If time-span is CUSTOM then --start and --end must be specified')
+    # If start and end are specified, time_span should be CUSTOM
+    if config_dict['start_dt'] and config_dict['end_date']:
+        if config_dict['time_span'] != 'CUSTOM':
+            raise click.ClickException('If --start and --end are specified then --time-span must be CUSTOM')
+    # If either start or end are specified then both must be specified
+    if config_dict['start_dt'] and not config_dict['end_date']:
+        raise click.ClickException('If --start is specified then --end must also be specified')
+    if not config_dict['start_dt'] and config_dict['end_date']:
+        raise click.ClickException('If --end is specified then --start must also be specified')
 
     # Do the import here so that the CLI is fast, because this import is sloooow.
     import dea_waterbodies.waterbody_timeseries_functions as dw_wtf
