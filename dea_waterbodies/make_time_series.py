@@ -155,19 +155,23 @@ def get_shapes(config_dict: dict, wb_ids: [str], id_field: str) -> [dict]:
 @click.option('--start', type=str)
 @click.option('--end', type=str)
 @click.option('--size', type=click.Choice(['ALL', 'SMALL', 'HUGE']))
-@click.option('--missing-only/--all', default=False)
+@click.option('--missing-only/--not-missing-only', default=False)
 @click.option('--skip', type=click.Path())
 @click.option('--time-span', type=click.Choice(['ALL', 'APPEND', 'CUSTOM']))
 @click.option('--output', type=click.Path())
 @click.option('--state', type=click.Choice(['ACT', 'NSW', 'NT', 'OT', 'QLD', 'SA', 'TAS', 'VIC', 'WA']))
 @click.option('--no-mask-obs/--mask-obs', default=False)
+@click.option('--all/--some', default=False)
 @click.version_option(version=dea_waterbodies.__version__)
 def main(ids, config, shapefile, start, end, size,
          missing_only, skip, time_span, output, state,
-         no_mask_obs):
+         no_mask_obs, all):
     """Make the waterbodies time series."""
 
     # TODO(MatthewJA): Read ids from stdin if necessary.
+    # TODO(MatthewJA): Implement --all.
+    if all:
+        raise NotImplementedError('--all not yet implemented.')
 
     # If we've specified a config file, load it in.
     if config:
