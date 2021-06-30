@@ -242,6 +242,8 @@ def main(ids, config, shapefile, start, end, size,
 
     # Open the shapefile and get the list of polygons.
     shapes = get_shapes(config_dict, ids, id_field)
+    logger.info(f'Found {len(shapes)} polygons for processing, '
+                f'out of a possible {len(ids)} (from ids list).')
 
     # TODO(MatthewJA): Output all the configuration settings in a better way.
     print('config', config_dict)
@@ -249,6 +251,7 @@ def main(ids, config, shapefile, start, end, size,
     # Loop through the polygons and write out a CSV of wet percentage,
     # wet area, and wet pixel count.
     # Attempt each polygon 2 times.
+    logger.info('Beginning processing.')
     for i, shape in enumerate(shapes):
         logger.info('Processing {} ({}/{})'.format(
             shape['properties'][id_field],
@@ -256,7 +259,11 @@ def main(ids, config, shapefile, start, end, size,
             len(shapes)))
         result = dw_wtf.generate_wb_timeseries(shape, config_dict)
         if not result:
+            logger.info('Retrying {}'.format(
+                shape['properties'][id_field]
+            ))
             result = dw_wtf.generate_wb_timeseries(shape, config_dict)
+    logger.info('Processing complete.')
     
     return 1
 
