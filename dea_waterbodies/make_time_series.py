@@ -257,6 +257,8 @@ def main(ids, config, shapefile, start, end, size,
         result = dw_wtf.generate_wb_timeseries(shape, config_dict)
         if not result:
             result = dw_wtf.generate_wb_timeseries(shape, config_dict)
+    
+    return 1
 
 
 if __name__ == "__main__":
