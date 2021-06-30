@@ -16,7 +16,7 @@ TEST_SHP = HERE / 'data' / 'waterbodies_canberra.shp'
 
 @pytest.fixture
 def runner():
-    return runner = CliRunner()
+    return CliRunner()
 
 
 def test_main(runner):
