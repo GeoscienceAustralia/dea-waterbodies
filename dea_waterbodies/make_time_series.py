@@ -84,7 +84,7 @@ def process_config(config_file: Path) -> dict:
     return config_dict
 
 
-def get_crs(shapefile_path: Path) -> geometry.CRS:
+def get_crs(shapefile_path: Path) -> 'datacube.geometry.CRS':
     from datacube.utils import geometry
     import fiona
     with fiona.open(shapefile_path) as shapes:
