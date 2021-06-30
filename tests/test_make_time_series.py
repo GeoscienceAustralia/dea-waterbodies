@@ -33,6 +33,9 @@ def test_make_one_csv(runner, tmp_path):
         '--output', tmp_path,
     ])
     expected_out_path = tmp_path / ginninderra_id[:4] / f'{ginninderra_id}.csv'
+    print(expected_out_path)
+    print(list(expected_out_path.iterdir()))
+    print([list(l.iterdir()) for l in expected_out_path.iterdir()])
     assert expected_out_path.exists()
     csv = gpd.pd.read_csv(expected_out_path, sep=',')
     assert csv.columns[0] == 'Observation Date'
