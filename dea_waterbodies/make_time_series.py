@@ -25,9 +25,9 @@ import click
 
 import dea_waterbodies
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(name)s %(levelname)s:%(message)s')
 logging.getLogger("botocore.credentials").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 def process_config(config_file: Path) -> dict:
