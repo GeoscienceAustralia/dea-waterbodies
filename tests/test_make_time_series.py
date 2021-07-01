@@ -18,9 +18,9 @@ TEST_SHP = HERE / 'data' / 'waterbodies_canberra.shp'
 
 @pytest.fixture
 def invoke():
-    def _invoke(f, args):
+    def _invoke(f, args, input=''):
         runner = CliRunner()
-        res = runner.invoke(f, args, catch_exceptions=True)
+        res = runner.invoke(f, args, catch_exceptions=True, input=input)
         if res.exception:
             raise res.exception
         return res
