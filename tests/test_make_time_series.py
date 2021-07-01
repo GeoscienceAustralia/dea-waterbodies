@@ -3,7 +3,6 @@ from pathlib import Path
 import re
 
 from click.testing import CliRunner
-import pytest
 import geopandas as gpd
 
 from dea_waterbodies.make_time_series import main, RE_IDS_STRING, RE_ID
@@ -16,15 +15,12 @@ logging.basicConfig(level=logging.INFO)
 TEST_SHP = HERE / 'data' / 'waterbodies_canberra.shp'
 
 
-@pytest.fixture
-def invoke():
-    def _invoke(f, args, input=''):
-        runner = CliRunner()
-        res = runner.invoke(f, args, catch_exceptions=True, input=input)
-        if res.exception:
-            raise res.exception
-        return res
-    return _invoke
+def invoke(f, args, input=''):
+    runner = CliRunner()
+    res = runner.invoke(f, args, catch_exceptions=True, input=input)
+    if res.exception:
+        raise res.exception
+    return res
 
 
 def test_main(invoke):
