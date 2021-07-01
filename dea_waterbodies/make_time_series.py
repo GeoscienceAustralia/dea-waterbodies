@@ -19,6 +19,7 @@ Geoscience Australia - 2021
 import configparser
 import logging
 from pathlib import Path
+import re
 import sys
 
 import click
@@ -30,6 +31,9 @@ logger = logging.getLogger(__name__)
 stdout_hdlr = logging.StreamHandler(sys.stdout)
 logger.addHandler(stdout_hdlr)
 logger.setLevel(logging.INFO)
+
+RE_ID = re.compile(r'[a-z0-9]+')
+RE_IDS_STRING = re.compile(r'(?:[a-z0-9]+,)*[a-z0-9]+')
 
 
 def process_config(config_file: Path) -> dict:
@@ -151,7 +155,7 @@ def get_shapes(config_dict: dict, wb_ids: [str], id_field: str) -> [dict]:
     return filtered_shapes, id_field
 
 @click.command()
-@click.argument('ids', required=False)
+@click.argument('ids', required=False, default='')
 @click.option('--config', '-c', type=click.Path(), default=None)
 @click.option('--shapefile', type=click.Path(), default=None)
 @click.option('--start', type=str, default=None)
@@ -170,11 +174,6 @@ def main(ids, config, shapefile, start, end, size,
          missing_only, skip, time_span, output, state,
          no_mask_obs, all):
     """Make the waterbodies time series."""
-
-    # TODO(MatthewJA): Read ids from stdin if necessary.
-    # TODO(MatthewJA): Implement --all.
-    if all:
-        raise NotImplementedError('--all not yet implemented.')
 
     # If we've specified a config file, load it in.
     if config:
@@ -231,6 +230,27 @@ def main(ids, config, shapefile, start, end, size,
     # These comparisons should probably be case-insensitive anyway, but
     # confirm here just to be sure.
     assert config_dict['size'].isupper()
+
+    # Process the IDs. If we have some, then read them and split.
+    if ids:
+        ids = ids.split(',')
+    elif not ids and all:
+        # TODO(MatthewJA): Read the IDs from the shapefile.
+        raise NotImplementedError('--all not implemented.')
+    else:
+        assert not ids
+        assert not all
+        # Read IDs from stdin.
+        ids = []
+        for line in sys.stdin:
+            line = line.strip()
+            if not line:
+                break
+            
+            if not RE_ID.match(line):
+                raise click.ClickException('Invalid waterbody ID: {}'.format(line))
+            
+            ids.append(line)
 
     # Do the import here so that the CLI is fast, because this import is sloooow.
     import dea_waterbodies.waterbody_timeseries_functions as dw_wtf
