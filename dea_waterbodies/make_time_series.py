@@ -148,26 +148,10 @@ def get_shapes(config_dict: dict, wb_ids: [str], id_field: str) -> [dict]:
 
     return filtered_shapes, id_field
 
-@click.command()
-@click.argument('ids', required=False)
-@click.option('--config', '-c', type=click.Path())
-@click.option('--shapefile', type=click.Path())
-@click.option('--start', type=str)
-@click.option('--end', type=str)
-@click.option('--size', type=click.Choice(['ALL', 'SMALL', 'HUGE']))
-@click.option('--missing-only/--not-missing-only', default=False)
-@click.option('--skip', type=click.Path())
-@click.option('--time-span', type=click.Choice(['ALL', 'APPEND', 'CUSTOM']))
-@click.option('--output', type=click.Path())
-@click.option('--state', type=click.Choice(['ACT', 'NSW', 'NT', 'OT', 'QLD', 'SA', 'TAS', 'VIC', 'WA']))
-@click.option('--no-mask-obs/--mask-obs', default=False)
-@click.option('--all/--some', default=False)
-@click.version_option(version=dea_waterbodies.__version__)
-def main(ids, config, shapefile, start, end, size,
-         missing_only, skip, time_span, output, state,
-         no_mask_obs, all):
-    """Make the waterbodies time series."""
 
+def _main(ids, config, shapefile, start, end, size,
+         missing_only, skip, time_span, output, state,
+         no_mask_obs, all, Exception_=ValueError):
     # TODO(MatthewJA): Read ids from stdin if necessary.
     # TODO(MatthewJA): Implement --all.
     if all:
@@ -185,7 +169,7 @@ def main(ids, config, shapefile, start, end, size,
         locals_ = locals()
         missing = [r for r in required if not locals_[r]]
         if missing:
-            raise click.ClickException(
+            raise Exception_(
                 'If a config file is not specified, then {} required'.format(
                     ', '.join('--' + r for r in missing)
                 ))
@@ -215,16 +199,16 @@ def main(ids, config, shapefile, start, end, size,
     # If time_span is CUSTOM, start and end should also be specified.
     if config_dict['time_span'] == 'CUSTOM':
         if not config_dict['start_dt'] or not config_dict['end_date']:
-            raise click.ClickException('If time-span is CUSTOM then --start and --end must be specified')
+            raise Exception_('If time-span is CUSTOM then --start and --end must be specified')
     # If start and end are specified, time_span should be CUSTOM
     if config_dict['start_dt'] and config_dict['end_date']:
         if config_dict['time_span'] != 'CUSTOM':
-            raise click.ClickException('If --start and --end are specified then --time-span must be CUSTOM')
+            raise Exception_('If --start and --end are specified then --time-span must be CUSTOM')
     # If either start or end are specified then both must be specified
     if config_dict['start_dt'] and not config_dict['end_date']:
-        raise click.ClickException('If --start is specified then --end must also be specified')
+        raise Exception_('If --start is specified then --end must also be specified')
     if not config_dict['start_dt'] and config_dict['end_date']:
-        raise click.ClickException('If --end is specified then --start must also be specified')
+        raise Exception_('If --end is specified then --start must also be specified')
     # These comparisons should probably be case-insensitive anyway, but
     # confirm here just to be sure.
     assert config_dict['size'].isupper()
@@ -266,6 +250,30 @@ def main(ids, config, shapefile, start, end, size,
     logger.info('Processing complete.')
     
     return 1
+
+
+@click.command()
+@click.argument('ids', required=False)
+@click.option('--config', '-c', type=click.Path())
+@click.option('--shapefile', type=click.Path())
+@click.option('--start', type=str)
+@click.option('--end', type=str)
+@click.option('--size', type=click.Choice(['ALL', 'SMALL', 'HUGE']))
+@click.option('--missing-only/--not-missing-only', default=False)
+@click.option('--skip', type=click.Path())
+@click.option('--time-span', type=click.Choice(['ALL', 'APPEND', 'CUSTOM']))
+@click.option('--output', type=click.Path())
+@click.option('--state', type=click.Choice(['ACT', 'NSW', 'NT', 'OT', 'QLD', 'SA', 'TAS', 'VIC', 'WA']))
+@click.option('--no-mask-obs/--mask-obs', default=False)
+@click.option('--all/--some', default=False)
+@click.version_option(version=dea_waterbodies.__version__)
+def main(ids, config, shapefile, start, end, size,
+         missing_only, skip, time_span, output, state,
+         no_mask_obs, all):
+    """Make the waterbodies time series."""
+    return _main(ids, config, shapefile, start, end, size,
+         missing_only, skip, time_span, output, state,
+         no_mask_obs, all, Exception_=click.ClickException)
 
 
 if __name__ == "__main__":
