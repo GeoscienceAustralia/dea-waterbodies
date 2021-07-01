@@ -17,18 +17,21 @@ TEST_SHP = HERE / 'data' / 'waterbodies_canberra.shp'
 
 
 @pytest.fixture
-def runner():
-    return CliRunner()
+def invoke():
+    def _invoke(f, args):
+        with CliRunner() as runner:
+            return runner.invoke(f, args, catch_exceptions=False)
+    return _invoke
 
 
-def test_main(runner):
-    result = runner.invoke(main, [])
+def test_main(invoke):
+    result = invoke(main, [])
     assert result
 
 
 def test_make_one_csv(runner, tmp_path):
     ginninderra_id = 'r3dp84s8n'
-    result = runner.invoke(main, [
+    result = invoke(main, [
         ginninderra_id,
         '--config', TEST_SHP,
         '--output', tmp_path,
