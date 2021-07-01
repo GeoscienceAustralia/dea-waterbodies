@@ -27,6 +27,8 @@ import dea_waterbodies
 
 logging.getLogger("botocore.credentials").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
+stdout_hdlr = logging.StreamHandler(sys.stdout)
+logger.addHandler(stdout_hdlr)
 logger.setLevel(logging.INFO)
 
 
