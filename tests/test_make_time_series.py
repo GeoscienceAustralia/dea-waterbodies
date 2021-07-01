@@ -33,6 +33,10 @@ def test_make_one_csv(runner, tmp_path):
         '--config', TEST_SHP,
         '--output', tmp_path,
     ])
+    print('stdout')
+    print(result.stdout_bytes)
+    print('stderr')
+    print(result.stderr_bytes)
     assert result
     expected_out_path = tmp_path / ginninderra_id[:4] / f'{ginninderra_id}.csv'
     print(expected_out_path)
