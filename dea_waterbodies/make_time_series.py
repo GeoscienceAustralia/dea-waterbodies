@@ -32,8 +32,8 @@ stdout_hdlr = logging.StreamHandler(sys.stdout)
 logger.addHandler(stdout_hdlr)
 logger.setLevel(logging.INFO)
 
-RE_ID = re.compile(r'[a-z0-9]+')
-RE_IDS_STRING = re.compile(r'(?:[a-z0-9]+,)*[a-z0-9]+')
+RE_ID = re.compile(r'[a-z0-9]+$')
+RE_IDS_STRING = re.compile(r'(?:[a-z0-9]+,)*[a-z0-9]+$')
 
 
 def process_config(config_file: Path) -> dict:

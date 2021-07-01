@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 import re
+import tempfile
 
 from click.testing import CliRunner
 import geopandas as gpd
@@ -23,7 +24,7 @@ def invoke(f, args, input=''):
     return res
 
 
-def test_main(invoke):
+def test_main():
     result = invoke(main, [])
     assert result
 
@@ -45,41 +46,43 @@ def test_ids_string_regex():
     assert not RE_IDS_STRING.match('r3dp84s8n, r3dp84s8n, r3dp84s8n,')
 
 
-def test_make_one_csv(invoke, tmp_path):
+def test_make_one_csv(tmp_path):
     ginninderra_id = 'r3dp84s8n'
-    result = invoke(main, [
-        ginninderra_id,
-        '--shapefile', TEST_SHP,
-        '--output', tmp_path,
-    ])
-    assert result
-    expected_out_path = tmp_path / ginninderra_id[:4] / f'{ginninderra_id}.csv'
-    assert expected_out_path.exists()
-    csv = gpd.pd.read_csv(expected_out_path, sep=',')
-    assert csv.columns[0] == 'Observation Date'
-    assert csv.columns[1] == 'Wet pixel percentage'
-    assert re.match(r'Wet pixel count (n = \d+)', csv.columns[2])
-    assert csv.columns[2] == 'Wet pixel count (n = 1358)'
-    assert csv.iloc[0]['Observation Date'].startswith('2021-03-30')
-    assert int(csv.iloc[0]['Wet pixel count (n = 1358)']) == 1200
-    assert not RE_IDS_STRING.match('r3dp84s8n, r3dp84s8n, r3dp84s8n,')
-    assert not RE_IDS_STRING.match('r3dp84s8n, r3dp84s8n, r3dp84s8n,')
+    with tempfile.TemporaryDirectory() as tmp_path:
+        tmp_path = Path(tmp_path)
+        result = invoke(main, [
+            ginninderra_id,
+            '--shapefile', TEST_SHP,
+            '--output', tmp_path,
+        ])
+        assert result
+        expected_out_path = tmp_path / ginninderra_id[:4] / f'{ginninderra_id}.csv'
+        assert expected_out_path.exists()
+        csv = gpd.pd.read_csv(expected_out_path, sep=',')
+        assert csv.columns[0] == 'Observation Date'
+        assert csv.columns[1] == 'Wet pixel percentage'
+        assert re.match(r'Wet pixel count (n = \d+)', csv.columns[2])
+        assert csv.columns[2] == 'Wet pixel count (n = 1358)'
+        assert csv.iloc[0]['Observation Date'].startswith('2021-03-30')
+        assert int(csv.iloc[0]['Wet pixel count (n = 1358)']) == 1200
 
 
-def test_make_one_csv_stdin(invoke, tmp_path):
+def test_make_one_csv_stdin(tmp_path):
     ginninderra_id = 'r3dp84s8n'
-    result = invoke(main, [
-        '--shapefile', TEST_SHP,
-        '--output', tmp_path,
-    ], input=f'{ginninderra_id}\n')
-    assert result
-    expected_out_path = tmp_path / ginninderra_id[:4] / f'{ginninderra_id}.csv'
-    assert expected_out_path.exists()
-    csv = gpd.pd.read_csv(expected_out_path, sep=',')
-    assert csv.columns[0] == 'Observation Date'
-    assert csv.columns[1] == 'Wet pixel percentage'
-    assert re.match(r'Wet pixel count (n = \d+)', csv.columns[2])
-    assert csv.columns[2] == 'Wet pixel count (n = 1358)'
-    assert csv.iloc[0]['Observation Date'].startswith('2021-03-30')
-    assert int(csv.iloc[0]['Wet pixel count (n = 1358)']) == 1200
-    assert not RE_IDS_STRING.match('r3dp84s8n, r3dp84s8n, r3dp84s8n,')
+    with tempfile.TemporaryDirectory() as tmp_path:
+        tmp_path = Path(tmp_path)
+        result = invoke(main, [
+            '--shapefile', TEST_SHP,
+            '--output', tmp_path,
+        ], input=f'{ginninderra_id}\n')
+        assert result
+        expected_out_path = tmp_path / ginninderra_id[:4] / f'{ginninderra_id}.csv'
+        assert expected_out_path.exists()
+        csv = gpd.pd.read_csv(expected_out_path, sep=',')
+        assert csv.columns[0] == 'Observation Date'
+        assert csv.columns[1] == 'Wet pixel percentage'
+        assert re.match(r'Wet pixel count (n = \d+)', csv.columns[2])
+        assert csv.columns[2] == 'Wet pixel count (n = 1358)'
+        assert csv.iloc[0]['Observation Date'].startswith('2021-03-30')
+        assert int(csv.iloc[0]['Wet pixel count (n = 1358)']) == 1200
+        assert not RE_IDS_STRING.match('r3dp84s8n, r3dp84s8n, r3dp84s8n,')
