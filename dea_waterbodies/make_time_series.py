@@ -210,7 +210,7 @@ def main(ids, config, shapefile, start, end, size,
     locals_ = locals()
     for cli_p, config_p in override_param_map.items():
         cli_val = locals_[cli_p]
-        if cli_val:
+        if cli_val or config_p not in config_dict:
             config_dict[config_p] = cli_val
 
     # Additional validation of parameters.
