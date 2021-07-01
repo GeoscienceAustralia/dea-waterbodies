@@ -13,7 +13,7 @@ HERE = Path(__file__).parent.resolve()
 TEST_SHP = HERE / 'data' / 'waterbodies_canberra.shp'
 
 
-def test_make_one_csv(runner, tmp_path):
+def test_make_one_csv(tmp_path):
     ginninderra_id = 'r3dp84s8n'
     result = _main([ginninderra_id], TEST_SHP, None, None, None, None,
                     False, None, None, tmp_path, None, False, False)
