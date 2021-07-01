@@ -20,7 +20,7 @@ TEST_SHP = HERE / 'data' / 'waterbodies_canberra.shp'
 def runner():
     return CliRunner()
 
-@pytest.fixture
+
 def invoke(runner, f, args, input=''):
     """Wrapper for CliRunner.invoke that throws exceptions."""
     res = runner.invoke(f, args, catch_exceptions=True, input=input)
