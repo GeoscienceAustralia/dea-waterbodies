@@ -33,7 +33,7 @@ def test_make_one_csv(invoke, tmp_path):
     ginninderra_id = 'r3dp84s8n'
     result = invoke(main, [
         ginninderra_id,
-        '--config', TEST_SHP,
+        '--shapefile', TEST_SHP,
         '--output', tmp_path,
     ])
     print('stdout')
