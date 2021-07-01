@@ -33,7 +33,7 @@ jobs:
       run: |
           docker-compose up -d
           ./setup_test_datacube.sh
-          docker-compose exec -T waterbodies bash -c "nosetests ."
+          docker-compose exec -T waterbodies bash -c "pytest ."
           docker-compose down
       
     
