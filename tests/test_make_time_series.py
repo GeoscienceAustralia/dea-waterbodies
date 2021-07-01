@@ -20,7 +20,10 @@ TEST_SHP = HERE / 'data' / 'waterbodies_canberra.shp'
 def invoke():
     def _invoke(f, args):
         runner = CliRunner()
-        return runner.invoke(f, args, catch_exceptions=False)
+        res = runner.invoke(f, args, catch_exceptions=True)
+        if res.exception:
+            raise res.exception
+        return res
     return _invoke
 
 
