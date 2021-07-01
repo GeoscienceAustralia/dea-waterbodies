@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 import re
 
@@ -9,6 +10,7 @@ from dea_waterbodies.make_time_series import main
 
 # Test directory.
 HERE = Path(__file__).parent.resolve()
+logging.basicConfig(level=logging.INFO)
 
 # Path to Canberra test shapefile.
 TEST_SHP = HERE / 'data' / 'waterbodies_canberra.shp'
