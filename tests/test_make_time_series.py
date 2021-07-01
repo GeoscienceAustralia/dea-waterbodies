@@ -19,8 +19,8 @@ TEST_SHP = HERE / 'data' / 'waterbodies_canberra.shp'
 @pytest.fixture
 def invoke():
     def _invoke(f, args):
-        with CliRunner() as runner:
-            return runner.invoke(f, args, catch_exceptions=False)
+        runner = CliRunner()
+        return runner.invoke(f, args, catch_exceptions=False)
     return _invoke
 
 
@@ -29,7 +29,7 @@ def test_main(invoke):
     assert result
 
 
-def test_make_one_csv(runner, tmp_path):
+def test_make_one_csv(invoke, tmp_path):
     ginninderra_id = 'r3dp84s8n'
     result = invoke(main, [
         ginninderra_id,
