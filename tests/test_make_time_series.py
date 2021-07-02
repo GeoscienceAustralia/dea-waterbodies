@@ -20,16 +20,17 @@ TEST_SHP = HERE / 'data' / 'waterbodies_canberra.shp'
 @pytest.fixture
 def run_main():
     def _run_cli(
-        *opts,
+        opts,
         catch_exceptions=False,
         expect_success=True,
         cli_method=main,
+        input=None,
     ):
         exe_opts = []
         exe_opts.extend(opts)
 
         runner = CliRunner()
-        result = runner.invoke(cli_method, exe_opts, catch_exceptions=catch_exceptions)
+        result = runner.invoke(cli_method, exe_opts, catch_exceptions=catch_exceptions, input=input)
         if expect_success:
             assert 0 == result.exit_code, "Error for %r. output: %r" % (
                 opts,
@@ -41,7 +42,7 @@ def run_main():
 
 
 def test_main(run_main):
-    result = run_main()
+    result = run_main([], expect_success=False)
     # TODO(MatthewJA): Make this assert that the output makes sense.
     assert result
 
