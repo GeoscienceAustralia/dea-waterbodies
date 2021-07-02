@@ -17,9 +17,11 @@ logging.basicConfig(level=logging.INFO)
 TEST_SHP = HERE / 'data' / 'waterbodies_canberra.shp'
 
 
-def test_main(runner):
-    runner = CliRunner()
-    result = runner.invoke(main, [])
+RUNNER = CliRunner()
+
+
+def test_main():
+    result = RUNNER.invoke(main, [])
     # TODO(MatthewJA): Make this assert that the output makes sense.
     assert result
 
@@ -42,13 +44,12 @@ def test_ids_string_regex():
 
 
 def test_make_one_csv(tmp_path):
-    runner = CliRunner()
     ginninderra_id = 'r3dp84s8n'
-    result = runner.invoke(main, [
+    result = RUNNER.invoke(main, [
         ginninderra_id,
         '--shapefile', TEST_SHP,
         '--output', tmp_path,
-    ])
+    ], catch_exceptions=False)
     assert result
     expected_out_path = tmp_path / ginninderra_id[:4] / f'{ginninderra_id}.csv'
     assert expected_out_path.exists()
@@ -62,12 +63,11 @@ def test_make_one_csv(tmp_path):
 
 
 def test_make_one_csv_stdin(tmp_path):
-    runner = CliRunner()
     ginninderra_id = 'r3dp84s8n'
-    result = runner.invoke(main, [
+    result = RUNNER.invoke(main, [
         '--shapefile', TEST_SHP,
         '--output', tmp_path,
-    ], input=f'{ginninderra_id}\n')
+    ], input=f'{ginninderra_id}\n', catch_exceptions=False)
     assert result
     expected_out_path = tmp_path / ginninderra_id[:4] / f'{ginninderra_id}.csv'
     assert expected_out_path.exists()
