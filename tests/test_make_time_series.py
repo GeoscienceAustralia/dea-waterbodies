@@ -3,7 +3,7 @@ from pathlib import Path
 import re
 import tempfile
 
-import click
+from click.testing import CliRunner
 import geopandas as gpd
 import pytest
 
@@ -17,8 +17,9 @@ logging.basicConfig(level=logging.INFO)
 TEST_SHP = HERE / 'data' / 'waterbodies_canberra.shp'
 
 
-def test_main(cli_runner):
-    result = cli_runner.invoke(main, [])
+def test_main(runner):
+    runner = CliRunner()
+    result = runner.invoke(main, [])
     # TODO(MatthewJA): Make this assert that the output makes sense.
     assert result
 
@@ -40,13 +41,14 @@ def test_ids_string_regex():
     assert not RE_IDS_STRING.match('r3dp84s8n, r3dp84s8n, r3dp84s8n,')
 
 
-def test_make_one_csv(cli_runner, tmp_path):
+def test_make_one_csv(tmp_path):
+    runner = CliRunner()
     ginninderra_id = 'r3dp84s8n'
-    result = cli_runner.invoke(main, [
+    result = runner.invoke(main, [
         ginninderra_id,
         '--shapefile', TEST_SHP,
         '--output', tmp_path,
-    ], catch_exceptions=False)
+    ])
     assert result
     expected_out_path = tmp_path / ginninderra_id[:4] / f'{ginninderra_id}.csv'
     assert expected_out_path.exists()
@@ -59,12 +61,13 @@ def test_make_one_csv(cli_runner, tmp_path):
     assert int(csv.iloc[0]['Wet pixel count (n = 1358)']) == 1200
 
 
-def test_make_one_csv_stdin(cli_runner, tmp_path):
+def test_make_one_csv_stdin(tmp_path):
+    runner = CliRunner()
     ginninderra_id = 'r3dp84s8n'
-    result = cli_runner.invoke(main, [
+    result = runner.invoke(main, [
         '--shapefile', TEST_SHP,
         '--output', tmp_path,
-    ], input=f'{ginninderra_id}\n', catch_exceptions=False)
+    ], input=f'{ginninderra_id}\n')
     assert result
     expected_out_path = tmp_path / ginninderra_id[:4] / f'{ginninderra_id}.csv'
     assert expected_out_path.exists()
