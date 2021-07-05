@@ -1,12 +1,10 @@
 import csv
 from datetime import datetime, timezone
 from dateutil import relativedelta, parser
-from math import ceil
 import os
 import fsspec
 from datacube import Datacube
 from datacube.utils import geometry
-import fiona
 import numpy
 import rasterio.features
 from shapely import geometry as shapely_geom
@@ -126,7 +124,8 @@ def generate_wb_timeseries(shapes, config_dict):
                            fuse_func=wofls_fuser, **query)
 
             if len(wofl.attrs) == 0:
-                logger.debug(f'There is no new data for {str_poly_name} in {time}')
+                logger.debug(
+                    f'There is no new data for {str_poly_name} in {time}')
                 # TODO(MatthewJA): Confirm (with Ness?) that changing this
                 # return to a continue doesn't break things.
                 continue

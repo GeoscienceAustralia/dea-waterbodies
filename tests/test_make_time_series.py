@@ -2,13 +2,13 @@ import logging
 from pathlib import Path
 import re
 import sys
-import tempfile
 
 from click.testing import CliRunner
 import geopandas as gpd
 import pytest
 
 from dea_waterbodies.make_time_series import main, RE_IDS_STRING, RE_ID
+
 
 # Test directory.
 HERE = Path(__file__).parent.resolve()
@@ -36,7 +36,9 @@ def run_main():
         exe_opts.extend(opts)
 
         runner = CliRunner()
-        result = runner.invoke(cli_method, exe_opts, catch_exceptions=catch_exceptions, input=input)
+        result = runner.invoke(
+            cli_method, exe_opts,
+            catch_exceptions=catch_exceptions, input=input)
         if expect_success:
             assert 0 == result.exit_code, "Error for %r. output: %r" % (
                 opts,
@@ -97,7 +99,8 @@ def test_make_one_csv(tmp_path, run_main):
 #         '--output', tmp_path,
 #     ], input=f'{ginninderra_id}\n', catch_exceptions=False)
 #     assert result
-#     expected_out_path = tmp_path / ginninderra_id[:4] / f'{ginninderra_id}.csv'
+#     expected_out_path = tmp_path / ginninderra_id[:4] /\
+#       f'{ginninderra_id}.csv'
 #     assert expected_out_path.exists()
 #     csv = gpd.pd.read_csv(expected_out_path, sep=',')
 #     assert csv.columns[0] == 'Observation Date'

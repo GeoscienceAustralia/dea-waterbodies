@@ -15,7 +15,7 @@ import pandas as pd
 import geohash as gh
 import datacube
 import numpy as np
-import rioxarray
+import rioxarray  # noqa: F401
 from dea_tools.spatial import xr_vectorize, xr_rasterize
 
 

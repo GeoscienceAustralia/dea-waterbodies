@@ -1,14 +1,17 @@
 """Get the waterbody time histories.
 
-Here we have a shapefile containing polygons we wish to explore. Each polygon is independent from the other, and
+Here we have a shapefile containing polygons we wish to explore.
+Each polygon is independent from the other, and
 so lends itself to simple parallelisation of the workflow.
 
-The code loops through each polygon in the shapefile and writes out a csv of waterbody percentage area full
+The code loops through each polygon in the shapefile and writes
+out a csv of waterbody percentage area full
 and wet pixel count.
 
 **Required inputs**
 
-a config file which contains the filename of the Shapefile containing the polygon set of water bodies to be interrogated,
+a config file which contains the filename of the Shapefile
+containing the polygon set of water bodies to be interrogated,
 access to a datacube containing wofls.
 
 Geoscience Australia - 2021
@@ -87,7 +90,7 @@ def process_config(config_file: Path) -> dict:
     return config_dict
 
 
-def get_crs(shapefile_path: Path) -> 'datacube.geometry.CRS':
+def get_crs(shapefile_path):
     from datacube.utils import geometry
     import fiona
     with fiona.open(shapefile_path) as shapes:
@@ -95,7 +98,7 @@ def get_crs(shapefile_path: Path) -> 'datacube.geometry.CRS':
     return crs
 
 
-def guess_id_field(shapefile_path: Path) -> str:
+def guess_id_field(shapefile_path) -> str:
     import fiona
     with fiona.open(shapefile_path) as shapes:
         row = next(iter(shapes))
@@ -128,13 +131,13 @@ def get_shapes(config_dict: dict, wb_ids: [str], id_field: str) -> [dict]:
             out_path = output_dir / id_[:4] / f'{id}.csv'
             if out_path.exists():
                 continue
-            
+
             missing_list.append(id_)
         wb_ids = missing_list
 
         logger.info(
             f'{len(missing_list)} missing polygons to process')
-    
+
     # Filter the list of shapes to include only specified polygons,
     # possibly constrained to a state.
     filtered_shapes = []
@@ -146,15 +149,17 @@ def get_shapes(config_dict: dict, wb_ids: [str], id_field: str) -> [dict]:
             if wb_id not in wb_ids:
                 logger.debug(f'Rejecting {wb_id} (not in wb_ids)')
                 continue
-            
+
             if config_state and shape['properties']['STATE'] != config_state:
-                logger.debug(f'Rejecting {wb_id} (not in state {config_state})')
+                logger.debug(
+                    f'Rejecting {wb_id} (not in state {config_state})')
                 continue
-            
+
             logger.debug(f'Accepting {wb_id}')
             filtered_shapes.append(shape)
 
     return filtered_shapes
+
 
 @click.command()
 @click.argument('ids', required=False, default='')
@@ -162,12 +167,15 @@ def get_shapes(config_dict: dict, wb_ids: [str], id_field: str) -> [dict]:
 @click.option('--shapefile', type=click.Path(), default=None)
 @click.option('--start', type=str, default=None)
 @click.option('--end', type=str, default=None)
-@click.option('--size', type=click.Choice(['ALL', 'SMALL', 'HUGE']), default='ALL')
+@click.option('--size', type=click.Choice(['ALL', 'SMALL', 'HUGE']),
+              default='ALL')
 @click.option('--missing-only/--not-missing-only', default=False)
 @click.option('--skip', type=click.Path(), default=None)
-@click.option('--time-span', type=click.Choice(['ALL', 'APPEND', 'CUSTOM']), default='ALL')
+@click.option('--time-span', type=click.Choice(['ALL', 'APPEND', 'CUSTOM']),
+              default='ALL')
 @click.option('--output', type=click.Path(), default=None)
-@click.option('--state', type=click.Choice(['ACT', 'NSW', 'NT', 'OT', 'QLD', 'SA', 'TAS', 'VIC', 'WA']),
+@click.option('--state', type=click.Choice(
+                ['ACT', 'NSW', 'NT', 'OT', 'QLD', 'SA', 'TAS', 'VIC', 'WA']),
               default=None)
 @click.option('--no-mask-obs/--mask-obs', default=False)
 @click.option('--all/--some', default=False)
@@ -178,7 +186,10 @@ def main(ids, config, shapefile, start, end, size,
          no_mask_obs, all, verbose):
     """Make the waterbodies time series."""
     # Set up logging.
-    loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
+    loggers = [logging.getLogger(name)
+               for name in logging.root.manager.loggerDict
+               if not name.startswith('fiona')
+               and not name.startswith('sqlalchemy')]
     stdout_hdlr = logging.StreamHandler(sys.stdout)
     for logger in loggers:
         if verbose == 0:
@@ -231,16 +242,22 @@ def main(ids, config, shapefile, start, end, size,
     # If time_span is CUSTOM, start and end should also be specified.
     if config_dict['time_span'] == 'CUSTOM':
         if not config_dict['start_dt'] or not config_dict['end_date']:
-            raise click.ClickException('If time-span is CUSTOM then --start and --end must be specified')
+            raise click.ClickException(
+                'If time-span is CUSTOM then --start and --end '
+                'must be specified')
     # If start and end are specified, time_span should be CUSTOM
     if config_dict['start_dt'] and config_dict['end_date']:
         if config_dict['time_span'] != 'CUSTOM':
-            raise click.ClickException('If --start and --end are specified then --time-span must be CUSTOM')
+            raise click.ClickException(
+                'If --start and --end are specified then '
+                '--time-span must be CUSTOM')
     # If either start or end are specified then both must be specified
     if config_dict['start_dt'] and not config_dict['end_date']:
-        raise click.ClickException('If --start is specified then --end must also be specified')
+        raise click.ClickException(
+            'If --start is specified then --end must also be specified')
     if not config_dict['start_dt'] and config_dict['end_date']:
-        raise click.ClickException('If --end is specified then --start must also be specified')
+        raise click.ClickException(
+            'If --end is specified then --start must also be specified')
     # These comparisons should probably be case-insensitive anyway, but
     # confirm here just to be sure.
     assert config_dict['size'].isupper()
@@ -260,17 +277,19 @@ def main(ids, config, shapefile, start, end, size,
             line = line.strip()
             if not line:
                 break
-            
+
             if not RE_ID.match(line):
-                raise click.ClickException('Invalid waterbody ID: {}'.format(line))
-            
+                raise click.ClickException(
+                    'Invalid waterbody ID: {}'.format(line))
+
             ids.append(line)
-    
+
     logger.debug('Processing IDs: {}'.format(
         repr(ids)
     ))
 
-    # Do the import here so that the CLI is fast, because this import is sloooow.
+    # Do the import here so that the CLI is fast,
+    # because this import is sloooow.
     import dea_waterbodies.waterbody_timeseries_functions as dw_wtf
 
     # Get the CRS from the shapefile.
@@ -306,7 +325,7 @@ def main(ids, config, shapefile, start, end, size,
             ))
             result = dw_wtf.generate_wb_timeseries(shape, config_dict)
     logger.info('Processing complete.')
-    
+
     return 1
 
 

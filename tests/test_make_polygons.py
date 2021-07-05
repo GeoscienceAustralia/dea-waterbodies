@@ -1,17 +1,17 @@
-from pathlib import Path
-
-import pytest
 import geopandas as gpd
 
 from dea_waterbodies import make_polygons
 
-def test_ok():
-    assert True
-    
 GINNINDERRA_BBOX = 149.054596, -35.242293, 149.095430, -35.211391
 
+
+def test_ok():
+    assert True
+
+
 def test_main(tmp_path):
-    # This should really stub out the datacube, but for now we'll use an actual datacube
+    # This should really stub out the datacube,
+    # but for now we'll use an actual datacube
     out_path = tmp_path / 'wb_outputs'
     out_path.mkdir()
     make_polygons.main(bbox=GINNINDERRA_BBOX,
@@ -30,6 +30,6 @@ def test_main(tmp_path):
                        base_filename='waterbodies_test_main',
                        output_path=out_path)
     assert (out_path / 'waterbodies_test_main.shp').exists()
-    
+
     file = gpd.read_file(out_path / 'waterbodies_test_main.shp')
     assert len(file) == 6
