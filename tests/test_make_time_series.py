@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 import re
+import sys
 import tempfile
 
 from click.testing import CliRunner
@@ -15,6 +16,11 @@ logging.basicConfig(level=logging.INFO)
 
 # Path to Canberra test shapefile.
 TEST_SHP = HERE / 'data' / 'waterbodies_canberra.shp'
+
+
+def setup_module(module):
+    logging.getLogger(module.__name__).basicConfig(stream=sys.stdout, level=logging.INFO)
+    logging.getLogger("").handlers = []
 
 
 @pytest.fixture

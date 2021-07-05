@@ -28,9 +28,6 @@ import dea_waterbodies
 
 logging.getLogger("botocore.credentials").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
-stdout_hdlr = logging.StreamHandler(sys.stdout)
-logger.addHandler(stdout_hdlr)
-logger.setLevel(logging.INFO)
 
 RE_ID = re.compile(r'[a-z0-9]+$')
 RE_IDS_STRING = re.compile(r'(?:[a-z0-9]+,)*[a-z0-9]+$')
@@ -174,6 +171,10 @@ def main(ids, config, shapefile, start, end, size,
          missing_only, skip, time_span, output, state,
          no_mask_obs, all):
     """Make the waterbodies time series."""
+    # Set up logging.
+    logger.setLevel(logging.INFO)
+    stdout_hdlr = logging.StreamHandler(sys.stdout)
+    logger.addHandler(stdout_hdlr)
 
     # If we've specified a config file, load it in.
     if config:
