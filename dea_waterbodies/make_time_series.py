@@ -147,7 +147,7 @@ def get_shapes(config_dict: dict, wb_ids: [str], id_field: str) -> [dict]:
                 logger.debug(f'Rejecting {wb_id} (not in wb_ids)')
                 continue
             
-            if 'filter_state' in shape['properties']['STATE'] and shape['properties']['STATE'] != config_state:
+            if 'filter_state' in config_dict and shape['properties']['STATE'] != config_state:
                 logger.debug(f'Rejecting {wb_id} (not in state {config_state})')
                 continue
             
