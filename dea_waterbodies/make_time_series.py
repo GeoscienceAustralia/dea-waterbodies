@@ -139,7 +139,7 @@ def get_shapes(config_dict: dict, wb_ids: [str], id_field: str) -> [dict]:
     # possibly constrained to a state.
     filtered_shapes = []
     wb_ids = set(wb_ids)  # for quick membership lookups
-    config_state = shape['properties']['STATE']
+    config_state = config_dict['filter_state']
     with fiona.open(config_dict['shape_file']) as shapes:
         for shape in shapes:
             wb_id = shape['properties'][id_field]
@@ -147,7 +147,7 @@ def get_shapes(config_dict: dict, wb_ids: [str], id_field: str) -> [dict]:
                 logger.debug(f'Rejecting {wb_id} (not in wb_ids)')
                 continue
             
-            if 'filter_state' in config_dict and config_state != config_dict['filter_state']:
+            if 'filter_state' in shape['properties']['STATE'] and shape['properties']['STATE'] != config_state:
                 logger.debug(f'Rejecting {wb_id} (not in state {config_state})')
                 continue
             
