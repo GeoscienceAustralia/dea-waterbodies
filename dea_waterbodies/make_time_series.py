@@ -139,17 +139,22 @@ def get_shapes(config_dict: dict, wb_ids: [str], id_field: str) -> [dict]:
     # possibly constrained to a state.
     filtered_shapes = []
     wb_ids = set(wb_ids)  # for quick membership lookups
+    config_state = shape['properties']['STATE']
     with fiona.open(config_dict['shape_file']) as shapes:
         for shape in shapes:
-            if shape['properties'][id_field] not in wb_ids:
+            wb_id = shape['properties'][id_field]
+            if wb_id not in wb_ids:
+                logger.debug(f'Rejecting {wb_id} (not in wb_ids)')
                 continue
             
-            if 'filter_state' in config_dict and shape['properties']['STATE'] != config_dict['filter_state']:
+            if 'filter_state' in config_dict and config_state != config_dict['filter_state']:
+                logger.debug(f'Rejecting {wb_id} (not in state {config_state})')
                 continue
-                
+            
+            logger.debug(f'Accepting {wb_id}')
             filtered_shapes.append(shape)
 
-    return filtered_shapes, id_field
+    return filtered_shapes
 
 @click.command()
 @click.argument('ids', required=False, default='')
@@ -252,6 +257,10 @@ def main(ids, config, shapefile, start, end, size,
                 raise click.ClickException('Invalid waterbody ID: {}'.format(line))
             
             ids.append(line)
+    
+    logger.debug('Processing IDs: {}'.format(
+        repr(ids)
+    ))
 
     # Do the import here so that the CLI is fast, because this import is sloooow.
     import dea_waterbodies.waterbody_timeseries_functions as dw_wtf
@@ -263,6 +272,7 @@ def main(ids, config, shapefile, start, end, size,
     # Guess the ID field.
     id_field = guess_id_field(config_dict['shape_file'])
     config_dict['id_field'] = id_field
+    logger.debug(f'Guessed ID field: {id_field}')
 
     # Open the shapefile and get the list of polygons.
     shapes = get_shapes(config_dict, ids, id_field)

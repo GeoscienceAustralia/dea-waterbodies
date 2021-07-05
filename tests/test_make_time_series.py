@@ -19,7 +19,7 @@ TEST_SHP = HERE / 'data' / 'waterbodies_canberra.shp'
 
 
 def setup_module(module):
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger("").handlers = []
 
 
