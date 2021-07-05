@@ -175,7 +175,7 @@ def get_shapes(config_dict: dict, wb_ids: [str], id_field: str) -> [dict]:
 @click.version_option(version=dea_waterbodies.__version__)
 def main(ids, config, shapefile, start, end, size,
          missing_only, skip, time_span, output, state,
-         no_mask_obs, all):
+         no_mask_obs, all, verbose):
     """Make the waterbodies time series."""
     # Set up logging.
     loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
