@@ -87,7 +87,7 @@ def test_make_one_csv(tmp_path, run_main):
     assert re.match(r'Wet pixel count \(n = \d+\)', csv.columns[2])
     assert csv.columns[2] == 'Wet pixel count (n = 1358)'
     assert csv.iloc[0]['Observation Date'].startswith('2000-02-02')
-    assert int(csv.iloc[0]['Wet pixel count (n = 1358)']) == 1200
+    assert int(csv.iloc[0]['Wet pixel count (n = 1358)']) == 1205
 
 
 # def test_make_one_csv_stdin(tmp_path):
