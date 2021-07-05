@@ -171,15 +171,23 @@ def get_shapes(config_dict: dict, wb_ids: [str], id_field: str) -> [dict]:
               default=None)
 @click.option('--no-mask-obs/--mask-obs', default=False)
 @click.option('--all/--some', default=False)
+@click.option('-v', '--verbose', count=True)
 @click.version_option(version=dea_waterbodies.__version__)
 def main(ids, config, shapefile, start, end, size,
          missing_only, skip, time_span, output, state,
          no_mask_obs, all):
     """Make the waterbodies time series."""
     # Set up logging.
-    logger.setLevel(logging.DEBUG)
+    loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
     stdout_hdlr = logging.StreamHandler(sys.stdout)
-    logger.addHandler(stdout_hdlr)
+    for logger in loggers:
+        if verbose == 0:
+            logger.setLevel(logging.WARNING)
+        elif verbose == 1:
+            logger.setLevel(logging.INFO)
+        elif verbose == 2:
+            logger.setLevel(logging.DEBUG)
+        logger.addHandler(stdout_hdlr)
 
     # If we've specified a config file, load it in.
     if config:

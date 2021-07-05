@@ -76,6 +76,7 @@ def test_make_one_csv(tmp_path, run_main):
         ginninderra_id,
         '--shapefile', TEST_SHP,
         '--output', tmp_path,
+        '-vv',
     ])
     assert result
     expected_out_path = tmp_path / ginninderra_id[:4] / f'{ginninderra_id}.csv'
