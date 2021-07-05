@@ -84,7 +84,7 @@ def test_make_one_csv(tmp_path, run_main):
     csv = gpd.pd.read_csv(expected_out_path, sep=',')
     assert csv.columns[0] == 'Observation Date'
     assert csv.columns[1] == 'Wet pixel percentage'
-    assert re.match(r'Wet pixel count (n = \d+)', csv.columns[2])
+    assert re.match(r'Wet pixel count \(n = \d+\)', csv.columns[2])
     assert csv.columns[2] == 'Wet pixel count (n = 1358)'
     assert csv.iloc[0]['Observation Date'].startswith('2021-03-30')
     assert int(csv.iloc[0]['Wet pixel count (n = 1358)']) == 1200
