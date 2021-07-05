@@ -177,7 +177,7 @@ def main(ids, config, shapefile, start, end, size,
          no_mask_obs, all):
     """Make the waterbodies time series."""
     # Set up logging.
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     stdout_hdlr = logging.StreamHandler(sys.stdout)
     logger.addHandler(stdout_hdlr)
 
