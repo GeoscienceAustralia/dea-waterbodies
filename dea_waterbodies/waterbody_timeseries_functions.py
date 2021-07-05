@@ -126,8 +126,10 @@ def generate_wb_timeseries(shapes, config_dict):
                            fuse_func=wofls_fuser, **query)
 
             if len(wofl.attrs) == 0:
-                logger.info(f'There is no new data for {str_poly_name}')
-                return 2
+                logger.debug(f'There is no new data for {str_poly_name} in {time}')
+                # TODO(MatthewJA): Confirm (with Ness?) that changing this
+                # return to a continue doesn't break things.
+                continue
             # Make a mask based on the polygon (to remove extra data
             # outside of the polygon)
             mask = rasterio.features.geometry_mask(
