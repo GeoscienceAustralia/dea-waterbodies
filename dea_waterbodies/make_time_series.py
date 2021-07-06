@@ -114,7 +114,9 @@ def guess_id_field(shapefile_path) -> str:
         'Couldn\'t find an ID field in {}'.format(keys))
 
 
-def get_shapes(config_dict: dict, wb_ids: [str], id_field: str) -> [dict]:
+def get_shapes(config_dict: dict,
+               wb_ids: [str] or None,
+               id_field: str) -> [dict]:
     import fiona
     output_dir = config_dict['output_dir']
 
@@ -265,9 +267,10 @@ def main(ids, config, shapefile, start, end, size,
     # Process the IDs. If we have some, then read them and split.
     if ids:
         ids = ids.split(',')
+        if all:
+            logger.warning('Ignoring --all since IDs are specified')
     elif not ids and all:
-        # TODO(MatthewJA): Read the IDs from the shapefile.
-        raise NotImplementedError('--all not implemented.')
+        ids = None  # Handled later in get_shapes
     else:
         assert not ids
         assert not all
@@ -306,7 +309,6 @@ def main(ids, config, shapefile, start, end, size,
     logger.info(f'Found {len(shapes)} polygons for processing, '
                 f'out of a possible {len(ids)} (from ids list).')
 
-    # TODO(MatthewJA): Output all the configuration settings in a better way.
     logger.info('Configuration:')
     for key in sorted(config_dict):
         logger.info(f'\t{key}={config_dict[key]}')

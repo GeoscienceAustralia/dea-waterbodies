@@ -119,7 +119,8 @@ def generate_wb_timeseries(shapes, config_dict):
 
             # Set up the query, and load in all of the WOFS layers
             query = {'geopolygon': geom, 'time': time}
-            logger.debug('Query: {}'.format(query))
+            logger.debug('Query: {}'.format({k: v for k, v in query.items()
+                                             if k != 'geopolygon'}))
             wofl = dc.load(product='wofs_albers', group_by='solar_day',
                            fuse_func=wofls_fuser, **query)
 
