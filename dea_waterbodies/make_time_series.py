@@ -307,7 +307,9 @@ def main(ids, config, shapefile, start, end, size,
                 f'out of a possible {len(ids)} (from ids list).')
 
     # TODO(MatthewJA): Output all the configuration settings in a better way.
-    print('config', config_dict)
+    logger.info('Configuration:')
+    for key in sorted(config_dict):
+        logger.info(f'\t{key}={config_dict[key]}')
 
     # Loop through the polygons and write out a CSV of wet percentage,
     # wet area, and wet pixel count.
