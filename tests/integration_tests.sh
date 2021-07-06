@@ -16,3 +16,7 @@ datacube product add https://raw.githubusercontent.com/GeoscienceAustralia/digit
 # Index one WOfS tile
 s3-to-dc "s3://dea-public-data/WOfS/filtered_summary/v2.1.0/combined/x_15/y_-40/wofs_filtered_summary_15_-40.yaml" --no-sign-request --skip-lineage wofs_filtered_summary
 s3-to-dc "s3://dea-public-data/WOfS/summary/v2.1.0/combined/x_15/y_-40/WOFS_3577_15_-40_summary.yaml" --no-sign-request --skip-lineage wofs_summary
+
+# Index two good quality WOfLs.
+s3-to-dc "s3://dea-public-data/WOfS/WOFLs/v2.1.5/combined/x_15/y_-40/2021/04/15/LS_WATER_3577_15_-40_20210415235609000000.yaml" --no-sign-request --skip-lineage wofs_albers
+s3-to-dc "s3://dea-public-data/WOfS/WOFLs/v2.1.5/combined/x_15/y_-40/2021/03/30/LS_WATER_3577_15_-40_20210330235615000000.yaml" --no-sign-request --skip-lineage wofs_albers

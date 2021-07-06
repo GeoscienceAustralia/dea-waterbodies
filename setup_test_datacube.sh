@@ -17,6 +17,8 @@ s3-to-dc 's3://dea-public-data/WOfS/filtered_summary/v2.1.0/combined/x_15/y_-40/
 s3-to-dc 's3://dea-public-data/WOfS/summary/v2.1.0/combined/x_15/y_-40/*.yaml' --no-sign-request --skip-lineage 'wofs_summary'
 # Coastline tile
 s3-to-dc 's3://dea-public-data/projects/geodata_coast_100k/v2004/x_15/y_-40/*.yaml' --no-sign-request --skip-lineage 'geodata_coast_100k'
+# WOfLs
+s3-to-dc 's3://dea-public-data/WOfS/WOFLs/v2.1.5/combined/x_15/y_-40/2000/02/**/*.yaml' --no-sign-request --skip-lineage 'wofs_albers'
 EOF
 
 cat index_tiles.sh | docker-compose exec -T index bash

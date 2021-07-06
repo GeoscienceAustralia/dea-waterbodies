@@ -1,13 +1,10 @@
-import configparser
 import csv
 from datetime import datetime, timezone
 from dateutil import relativedelta, parser
-from math import ceil
 import os
 import fsspec
 from datacube import Datacube
 from datacube.utils import geometry
-import fiona
 import numpy
 import rasterio.features
 from shapely import geometry as shapely_geom
@@ -15,157 +12,6 @@ from shapely import geometry as shapely_geom
 import logging
 
 logger = logging.getLogger(__name__)
-
-
-def process_config(config_file):
-    config = configparser.ConfigParser()
-    config_dict = {}
-    config.read(config_file)
-    start_date = '1986'
-    if 'SHAPEFILE' in config['DEFAULT'].keys():
-        config_dict['shape_file'] = config['DEFAULT']['SHAPEFILE']
-
-    if 'START_DATE' in config['DEFAULT'].keys():
-        config_dict['start_dt'] = config['DEFAULT']['START_DATE']
-        logger.info(f'START_DATE {start_date}')
-
-    if 'END_DATE' in config['DEFAULT'].keys():
-        config_dict['end_date'] = config['DEFAULT']['END_DATE']
-    if 'SIZE' in config['DEFAULT'].keys():
-        config_dict['size'] = config['DEFAULT']['SIZE'].upper()
-    else:
-        config_dict['size'] = 'ALL'
-    if 'MISSING_ONLY' in config['DEFAULT'].keys():
-        if config['DEFAULT']['MISSING_ONLY'].upper() == 'TRUE':
-            config_dict['missing_only'] = True
-        else:
-            config_dict['missing_only'] = False
-    else:
-        config_dict['missing_only'] = False
-
-    if 'PROCESSED_FILE' in config['DEFAULT'].keys():
-        if len(config['DEFAULT']['PROCESSED_FILE']) > 2:
-            config_dict['processed_file'] = config['DEFAULT']['PROCESSED_FILE']
-        else:
-            config_dict['processed_file'] = ''
-    else:
-        config_dict['processed_file'] = ''
-
-    if 'TIME_SPAN' in config['DEFAULT'].keys():
-        config_dict['time_span'] = config['DEFAULT']['TIME_SPAN'].upper()
-    else:
-        config_dict['time_span'] = 'ALL'
-
-    if 'OUTPUTDIR' in config['DEFAULT'].keys():
-        config_dict['output_dir'] = config['DEFAULT']['OUTPUTDIR']
-
-    if 'FILTER_STATE' in config['DEFAULT'].keys():
-        config_dict['filter_state'] = config['DEFAULT']['FILTER_STATE']
-
-    if 'UNCERTAINTY' in config['DEFAULT'].keys():
-        if config['DEFAULT']['UNCERTAINTY'].upper() == 'TRUE':
-            config_dict['include_uncertainty'] = True
-    else:
-        config_dict['include_uncertainty'] = False
-
-    return config_dict
-
-
-def get_shapefile_list(config_dict, part=1, num_chunks=1):
-    output_dir = config_dict['output_dir']
-    processed_file = config_dict['processed_file']
-    # Get the shapefile's crs
-    with fiona.open(config_dict['shape_file']) as shapes:
-        crs = geometry.CRS(shapes.crs_wkt)
-        shapes_list = list(shapes)
-
-    if 'UID' in shapes_list[0]['properties'].keys():
-        id_field = 'UID'
-    elif 'WB_ID' in shapes_list[0]['properties'].keys():
-        id_field = 'WB_ID'
-    elif 'FID_1' in shapes_list[0]['properties'].keys():
-        id_field = 'FID_1'
-    elif 'FID' in shapes_list[0]['properties'].keys():
-        id_field = 'FID'
-    else:
-        id_field = 'ID'
-
-    # not used if using huge mem
-    if config_dict['size'] == 'SMALL':
-        newlist = []
-        for shapes in shapes_list:
-            if shapely_geom.shape(shapes['geometry']).envelope.area <= 200000:
-                newlist.append(shapes)
-        shapes_list = newlist
-        logger.info(f'{len(newlist)} small polygons')
-
-    # not used if using huge mem
-    if config_dict['size'] == 'HUGE':
-        newlist = []
-        for shapes in shapes_list:
-            if shapely_geom.shape(shapes['geometry']).envelope.area > 200000:
-                newlist.append(shapes)
-        shapes_list = newlist
-        logger.info(f'{len(newlist)} huge polygons')
-
-    if config_dict['missing_only']:
-        logger.info(f"missing_only {config_dict['missing_only']}")
-        if len(processed_file) < 2:
-            logger.info(f'processed_file {processed_file}')
-            missing_list = []
-            for shapes in shapes_list:
-                str_poly_name = shapes['properties'][id_field]
-                try:
-                    fpath = os.path.join(
-                        output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv'
-                    )
-                except TypeError:
-                    str_poly_name = str(int(str_poly_name)).zfill(6)
-                    fpath = os.path.join(
-                        output_dir, f'{str_poly_name[0:4]}/{str_poly_name}.csv'
-                    )
-                try:
-                    of2 = fsspec.open(fpath)
-                    with of2 as f2:
-                        f2.close()
-                except FileNotFoundError:
-                    missing_list.append(shapes)
-            shapes_list = missing_list
-            logger.info(f'{len(missing_list)} missing polygons')
-
-    if len(processed_file) > 1:
-        missing_list = []
-        of = fsspec.open(processed_file, 'r')
-        with of as f:
-            files = f.readlines()
-            for shapes in shapes_list:
-                str_poly_name = shapes['properties'][id_field]
-                try:
-                    fpath = os.path.join(
-                        output_dir,
-                        f'{str_poly_name[0:4]}/{str_poly_name}.csv\n')
-                except TypeError:
-                    str_poly_name = str(int(str_poly_name)).zfill(6)
-                    fpath = os.path.join(
-                        output_dir,
-                        f'{str_poly_name[0:4]}/{str_poly_name}.csv\n')
-                if fpath in files:
-                    missing_list.append(shapes)
-        shapes_list = missing_list
-        logger.info(
-            f'{len(missing_list)} missing polygons from {processed_file}')
-
-    if 'filter_state' in config_dict.keys():
-        shapes_list = [
-            shape for shape in shapes_list
-            if shape['properties']['STATE'] == config_dict['filter_state']]
-
-    chunk_size = ceil(len(shapes_list) / num_chunks) + 1
-    shapes_subset = shapes_list[(part - 1) * chunk_size: part * chunk_size]
-
-    _idx = (part - 1) * chunk_size, part * chunk_size
-    logger.info(f'The index we will use is {_idx}')
-    return shapes_subset, crs, id_field
 
 
 def get_last_date(fpath, max_days=None):
@@ -273,12 +119,17 @@ def generate_wb_timeseries(shapes, config_dict):
 
             # Set up the query, and load in all of the WOFS layers
             query = {'geopolygon': geom, 'time': time}
+            logger.debug('Query: {}'.format({k: v for k, v in query.items()
+                                             if k != 'geopolygon'}))
             wofl = dc.load(product='wofs_albers', group_by='solar_day',
                            fuse_func=wofls_fuser, **query)
 
             if len(wofl.attrs) == 0:
-                logger.info(f'There is no new data for {str_poly_name}')
-                return 2
+                logger.debug(
+                    f'There is no new data for {str_poly_name} in {time}')
+                # TODO(MatthewJA): Confirm (with Ness?) that changing this
+                # return to a continue doesn't break things.
+                continue
             # Make a mask based on the polygon (to remove extra data
             # outside of the polygon)
             mask = rasterio.features.geometry_mask(
