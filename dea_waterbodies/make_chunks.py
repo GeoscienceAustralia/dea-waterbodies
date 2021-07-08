@@ -92,7 +92,7 @@ def alloc_chunks(area_ids, n_chunks):
 
 @click.command()
 @click.argument('config_path')
-@click.argument('n_chunks')
+@click.argument('n_chunks', type=int)
 def main(config_path, n_chunks):
     dbf_path = get_dbf_from_config(config_path)
     area_ids = get_areas_and_ids(dbf_path)
