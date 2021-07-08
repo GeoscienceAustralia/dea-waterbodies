@@ -66,12 +66,12 @@ def test_get_dbf_from_config(config_path):
     assert dbf_path == TEST_DBF
 
 
-def test_get_dbf_from_config_s3(config_s3_path):
+def test_get_dbf_from_config_s3(config_path_s3):
     # This tests an S3 path being included in the config.
     # This was treated as a local path somehow with the error:
     # No such file or directory: '/code/s3:/file.dbf'
     with mock.patch('dea_waterbodies.make_chunks.urlopen', wraps=bytesopen):
-        dbf_path = make_chunks.get_dbf_from_config(config_s3_path)
+        dbf_path = make_chunks.get_dbf_from_config(config_path_s3)
     assert dbf_path.parent == TEST_SHP_S3.parent
     assert dbf_path.stem == TEST_SHP_S3.stem
     assert dbf_path.suffix == '.dbf'
