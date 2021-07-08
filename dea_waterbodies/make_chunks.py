@@ -91,7 +91,7 @@ def main(config_path, n_chunks):
     dbf_path = get_dbf_from_config(config_path)
     area_ids = get_areas_and_ids(dbf_path)
     out = alloc_chunks(area_ids, n_chunks)
-    print(json.dumps(out))
+    print(json.dumps({'chunks': out}))
 
 
 if __name__ == "__main__":
