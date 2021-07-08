@@ -32,7 +32,7 @@ def get_areas_and_ids(dbf_path):
     """Download and process a DBF."""
     with tempfile.TemporaryDirectory() as tempdir:
         with fsspec.open(dbf_path, 'rb') as f:
-            dbf_dump_path = tempdir / dbf_path.name
+            dbf_dump_path = Path(tempdir) / dbf_path.name
             with open(dbf_dump_path, 'wb') as g:
                 g.write(f.read())
 
