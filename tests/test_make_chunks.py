@@ -23,6 +23,7 @@ TEST_SHP = HERE / 'data' / 'waterbodies_canberra.shp'
 @pytest.fixture
 def config_path(tmp_path):
     config = f"""; config.ini
+[DEFAULT]
 SHAPEFILE = {TEST_SHP}
 """
     config_path = tmp_path / 'test-config.ini'
@@ -32,6 +33,7 @@ SHAPEFILE = {TEST_SHP}
 
 
 def bytesopen(path):
+    """Open a file as bytes, like urlopen does."""
     return open(path, 'rb')
 
 
