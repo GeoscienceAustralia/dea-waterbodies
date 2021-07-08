@@ -31,8 +31,12 @@ SHAPEFILE = {TEST_SHP}
     return config_path
 
 
+def bytesopen(path):
+    return open(path, 'rb')
+
+
 def test_get_dbf_from_config(config_path):
-    with mock.patch('dea_waterbodies.make_chunks.urlopen', wraps=open):
+    with mock.patch('dea_waterbodies.make_chunks.urlopen', wraps=bytesopen):
         dbf_path = make_chunks.get_dbf_from_config(config_path)
     assert dbf_path.parent == TEST_SHP.parent
     assert dbf_path.stem == TEST_SHP.stem
