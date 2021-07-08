@@ -60,9 +60,6 @@ def bytesopen(path):
 def test_get_dbf_from_config(config_path):
     with mock.patch('dea_waterbodies.make_chunks.urlopen', wraps=bytesopen):
         dbf_path = make_chunks.get_dbf_from_config(config_path)
-    assert dbf_path.parent == TEST_SHP.parent
-    assert dbf_path.stem == TEST_SHP.stem
-    assert dbf_path.suffix == '.dbf'
     assert dbf_path == TEST_DBF
 
 
