@@ -32,7 +32,7 @@ SHAPEFILE = {TEST_SHP}
 
 
 def test_get_dbf_from_config(config_path):
-    with mock.patch('urllib.request.urlopen', new=open):
+    with mock.patch('urllib.request.urlopen', wraps=open):
         dbf_path = make_chunks.get_dbf_from_config(config_path)
     assert dbf_path.parent == TEST_SHP.parent
     assert dbf_path.stem == TEST_SHP.stem
