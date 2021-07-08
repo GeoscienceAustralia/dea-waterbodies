@@ -17,8 +17,8 @@ import dea_waterbodies.make_chunks as make_chunks
 HERE = Path(__file__).parent.resolve()
 
 # Path to Canberra test shapefile.
-TEST_SHP = HERE / 'data' / 'waterbodies_canberra.shp'
-TEST_DBF = HERE / 'data' / 'waterbodies_canberra.dbf'
+TEST_SHP = str(HERE / 'data' / 'waterbodies_canberra.shp')
+TEST_DBF = str(HERE / 'data' / 'waterbodies_canberra.dbf')
 
 # How many polygons are in TEST_SHP.
 N_TEST_POLYGONS = 86
