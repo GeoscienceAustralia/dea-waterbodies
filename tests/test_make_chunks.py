@@ -44,7 +44,7 @@ SHAPEFILE = {TEST_SHP}
 def config_path_s3(tmp_path):
     config = f"""; config.ini
 [DEFAULT]
-SHAPEFILE = {TEST_SHP}
+SHAPEFILE = {TEST_SHP_S3}
 """
     config_path = tmp_path / 'test-config.ini'
     with open(config_path, 'w') as f:

@@ -18,7 +18,7 @@ from osgeo import ogr
 
 def get_dbf_from_config(config_path) -> str:
     """Find the DBF file specified in a config.
-    
+
     Must return a string, not a Path, in case there's a protocol.
     """
     # Download the config file to find the shapefile.
