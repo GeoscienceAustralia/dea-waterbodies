@@ -54,4 +54,6 @@ def test_get_areas_and_ids():
     area_ids = make_chunks.get_areas_and_ids(TEST_DBF)
     assert len(area_ids) == N_TEST_POLYGONS
     # Lake Burley Griffin
-    assert dict(area_ids)['r3dp1nxh8'] == 6478750
+    lbg = [(a, i) for a, i in area_ids if i == 'r3dp1nxh8']
+    assert len(lbg) == 1
+    assert lbg[0] == 6478750
