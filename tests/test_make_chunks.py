@@ -31,7 +31,7 @@ SHAPEFILE = {TEST_SHP}
     return config_path
 
 
-def test_get_dbf_from_config(config_path, urlopen):
+def test_get_dbf_from_config(config_path):
     with mock.patch('urllib.request.urlopen', new_callable=open):
         dbf_path = make_chunks.get_dbf_from_config(config_path)
     assert dbf_path.parent == TEST_SHP.parent
