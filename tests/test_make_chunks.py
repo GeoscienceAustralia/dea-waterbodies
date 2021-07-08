@@ -57,3 +57,12 @@ def test_get_areas_and_ids():
     lbg, = [(a, i) for a, i in area_ids if i == 'r3dp1nxh8']
     # Check that areas match to within 10 m^2
     assert round(lbg[0]) // 10 == 6478750 // 10
+    assert dbf_path == TEST_DBF
+
+
+def test_alloc_chunks():
+    area_ids = [(100, 'a'), (200, 'b'), (100, 'c')]
+    chunks = make_chunks.alloc_chunks(area_ids, 2)
+    assert len(chunks) == 2
+    assert chunks[0]['ids'] == ['b']
+    assert sorted(chunks[1]['ids']) == sorted(['a', 'c'])
