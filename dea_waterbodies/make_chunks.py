@@ -37,7 +37,7 @@ def get_areas_and_ids(dbf_path):
                 g.write(f.read())
 
         # Get the areas.
-        ds = ogr.Open(dbf_dump_path, 0)
+        ds = ogr.Open(str(dbf_dump_path), 0)
         layer = ds.ExecuteSQL(f'select area, UID from {dbf_path.stem}')
         area_ids = [(float(i.GetField('area')), i.GetField('UID'))
                     for i in layer]
