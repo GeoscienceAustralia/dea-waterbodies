@@ -18,6 +18,10 @@ HERE = Path(__file__).parent.resolve()
 
 # Path to Canberra test shapefile.
 TEST_SHP = HERE / 'data' / 'waterbodies_canberra.shp'
+TEST_DBF = HERE / 'data' / 'waterbodies_canberra.dbf'
+
+# How many polygons are in TEST_SHP.
+N_TEST_POLYGONS = 86
 
 
 @pytest.fixture
@@ -43,3 +47,11 @@ def test_get_dbf_from_config(config_path):
     assert dbf_path.parent == TEST_SHP.parent
     assert dbf_path.stem == TEST_SHP.stem
     assert dbf_path.suffix == '.dbf'
+    assert dbf_path == TEST_DBF
+
+
+def test_get_areas_and_ids():
+    area_ids = make_chunks.get_areas_and_ids(TEST_DBF)
+    assert len(area_ids) == N_TEST_POLYGONS
+    # Lake Burley Griffin
+    assert dict(area_ids)['r3dp1nxh8'] == 6478750
