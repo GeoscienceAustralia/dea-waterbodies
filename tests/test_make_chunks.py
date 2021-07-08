@@ -56,4 +56,5 @@ def test_get_areas_and_ids():
     # Lake Burley Griffin
     lbg = [(a, i) for a, i in area_ids if i == 'r3dp1nxh8']
     assert len(lbg) == 1
-    assert lbg[0] == 6478750
+    # Check that areas match to within 10 m^2
+    assert round(lbg[0]) // 10 == 6478750 // 10
