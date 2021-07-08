@@ -5,6 +5,7 @@ Geoscience Australia
 2021
 """
 
+from unittest import mock
 from pathlib import Path
 
 import pytest
@@ -30,8 +31,9 @@ SHAPEFILE = {TEST_SHP}
     return config_path
 
 
-def test_get_dbf_from_config(config_path):
-    dbf_path = make_chunks.get_dbf_from_config(config_path)
+def test_get_dbf_from_config(config_path, urlopen):
+    with mock.patch('urllib.request.urlopen', new_callable=open):
+        dbf_path = make_chunks.get_dbf_from_config(config_path)
     assert dbf_path.parent == TEST_SHP.parent
     assert dbf_path.stem == TEST_SHP.stem
     assert dbf_path.suffix == '.dbf'
