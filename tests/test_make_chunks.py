@@ -54,7 +54,6 @@ def test_get_areas_and_ids():
     area_ids = make_chunks.get_areas_and_ids(TEST_DBF)
     assert len(area_ids) == N_TEST_POLYGONS
     # Lake Burley Griffin
-    lbg = [(a, i) for a, i in area_ids if i == 'r3dp1nxh8']
-    assert len(lbg) == 1
+    lbg, = [(a, i) for a, i in area_ids if i == 'r3dp1nxh8']
     # Check that areas match to within 10 m^2
     assert round(lbg[0]) // 10 == 6478750 // 10
