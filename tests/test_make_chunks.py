@@ -5,8 +5,10 @@ Geoscience Australia
 2021
 """
 
-from unittest import mock
 from pathlib import Path
+import random
+from unittest import mock
+import uuid
 
 import pytest
 
@@ -87,3 +89,25 @@ def test_alloc_chunks():
     assert len(chunks) == 2
     assert chunks[0]['ids'] == ['b']
     assert sorted(chunks[1]['ids']) == sorted(['a', 'c'])
+
+
+def test_alloc_chunks_insufficient_polygons():
+    """Less polygons than chunks."""
+    area_ids = [(100, 'a'), (200, 'b'), (100, 'c')]
+    chunks = make_chunks.alloc_chunks(area_ids, 4)
+    assert len(chunks) == 4
+
+
+def test_alloc_chunks_fuzz():
+    """Correct chunk counts for various chunks and polygons."""
+    random.seed(0)
+    for _ in range(100):
+        n_poly = random.randrange(2, 1500)
+        n_chunks = random.randrange(1, 150)
+        area_ids = [(random.randrange(1, 10000), str(uuid.uuid4()))
+                    for _ in range(n_poly)]
+        chunks = make_chunks.alloc_chunks(area_ids, n_chunks)
+        assert len(chunks) == 4, 'Expected {} chunks, got {}'.format(
+            n_chunks,
+            len(chunks),
+        )
