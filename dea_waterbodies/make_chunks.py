@@ -95,7 +95,7 @@ def alloc_chunks(area_ids, n_chunks):
 
     # Output chunks as JSON.
     out = [
-        {'max_mem_Mi': max(est_mem(i) for i in chunk),
+        {'max_mem_Mi': max(est_mem(i) for i in chunk) if chunk else 0,
          'ids': chunk}
         for chunk in area_chunks
     ]
