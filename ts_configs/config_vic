@@ -1,0 +1,8 @@
+; config_vic
+[DEFAULT]
+SHAPEFILE=s3://dea-public-data/projects/WaterBodies/DEA_Waterbodies_shapefile/AusWaterBodiesFINALStateLink.shp
+OUTPUTDIR=s3://dea-public-data-dev/waterbodies/vic/timeseries/
+TIME_SPAN=ALL
+MISSING_ONLY=TRUE
+SIZE=ALL
+FILTER_STATE=VIC
