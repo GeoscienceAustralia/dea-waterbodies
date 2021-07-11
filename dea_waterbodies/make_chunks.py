@@ -76,6 +76,8 @@ def alloc_chunks(area_ids, n_chunks):
             n_remaining_chunks = n_chunks - len(area_chunks)
             if n_remaining_chunks == 0 and to_alloc:
                 raise RuntimeError('Not enough chunks remaining')
+            if not to_alloc:
+                break  # Avoid zero division
             area_budget = total_area / n_remaining_chunks
 
     # Estimate memory usage for each chunk.
