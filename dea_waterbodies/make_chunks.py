@@ -63,13 +63,20 @@ def alloc_chunks(area_ids, n_chunks):
     area_chunks = []
     current_area_budget = 0
     current_area_chunk = []
-    for area, id_ in area_ids:
+    to_alloc = area_ids[::-1]
+    while to_alloc:
+        area, id_ = to_alloc.pop()
         current_area_budget += area
         current_area_chunk.append(id_)
         if current_area_budget >= area_budget:
             current_area_budget = 0
             area_chunks.append(current_area_chunk)
             current_area_chunk = []
+            total_area = sum(a for a, _ in to_alloc)
+            n_remaining_chunks = n_chunks - len(area_chunks)
+            if n_remaining_chunks == 0 and to_alloc:
+                raise RuntimeError('Not enough chunks remaining')
+            area_budget = total_area / n_remaining_chunks
 
     # Estimate memory usage for each chunk.
     id_to_area = dict([i[::-1] for i in area_ids])
