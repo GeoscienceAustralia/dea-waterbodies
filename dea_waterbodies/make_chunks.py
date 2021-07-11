@@ -79,6 +79,9 @@ def alloc_chunks(area_ids, n_chunks):
             if not to_alloc:
                 break  # Avoid zero division
             area_budget = total_area / n_remaining_chunks
+    
+    while len(area_chunks) < n_chunks:
+        area_chunks.append([])
 
     # Estimate memory usage for each chunk.
     id_to_area = dict([i[::-1] for i in area_ids])
