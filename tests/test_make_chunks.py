@@ -107,7 +107,7 @@ def test_alloc_chunks_fuzz():
         area_ids = [(random.randrange(1, 10000), str(uuid.uuid4()))
                     for _ in range(n_poly)]
         chunks = make_chunks.alloc_chunks(area_ids, n_chunks)
-        assert len(chunks) == 4, 'Expected {} chunks, got {}'.format(
+        assert len(chunks) == n_chunks, 'Expected {} chunks, got {}'.format(
             n_chunks,
             len(chunks),
         )
