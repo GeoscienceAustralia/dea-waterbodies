@@ -28,6 +28,7 @@ RUN apt-get update \
          wget \
          curl \
          nano \
+         unzip \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /tmp
