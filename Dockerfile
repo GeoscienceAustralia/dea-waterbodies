@@ -53,4 +53,4 @@ RUN pip install --use-feature=2020-resolver --extra-index-url="https://packages.
 RUN env && echo $PATH && pip freeze && pip check
 
 # Make sure it's working
-RUN dea-waterbodies --version
+RUN waterbodies-ts --version
