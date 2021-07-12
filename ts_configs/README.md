@@ -5,7 +5,7 @@ To update the DEA Waterbodies timeseries, you need to run a script called `GetWB
 The config options are:
 * `SHAPEFILE`: the file path to the DEA Waterbodies shapefile. 
 * `OUTPUT_DIR`: the file path to the output directory for the waterbody timeseries. 
-* `SIZE`: [ `ALL` (default) | `SMALL` | `HUGE` ]. The `SIZE` option allows you to process only large or small waterbodies. If you select `SMALL`, then only waterbodies <= 200000 m<sup>2</sup> will be analysed (93% of all the waterbodies). If you select `LARGE`, then only waterbodies `> 200000` m<sup>2</sup> will be analysed (7% of all the waterbodies). `SIZE will default to `ALL if no other option is specified. 
+* `SIZE`: [ `ALL` (default) | `SMALL` | `HUGE` ]. **NOT IMPLEMENTED IN CURRENT REPO** The `SIZE` option allows you to process only large or small waterbodies. If you select `SMALL`, then only waterbodies <= 200000 m<sup>2</sup> will be analysed (93% of all the waterbodies). If you select `LARGE`, then only waterbodies `> 200000` m<sup>2</sup> will be analysed (7% of all the waterbodies). `SIZE will default to `ALL if no other option is specified. 
 * `TIME_SPAN`: [ `ALL` (default) |  `APPEND` | `CUSTOM` ]. `TIME_SPAN` sets the time range for the waterbody timeseries queries. If you select `APPEND`, then only times since the latest dates in the waterbody timeseries will be run. `TIME_SPAN` will default to `ALL` if no other option is specified. If `TIME_SPAN = CUSTOM`, then `START_DATE` and `END_DATE` must be set.
     * `START_DATE`: The start date for the waterbody timeseries query.
     * `END_DATE`: The end date for the waterbody timeseries query.
