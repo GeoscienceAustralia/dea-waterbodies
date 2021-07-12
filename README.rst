@@ -22,6 +22,7 @@ Digital Earth Australia Waterbodies
 **Contact:** If you need assistance with any of the Jupyter Notebooks or Python code in this repository, please post a question on the `Open Data Cube Slack channel <http://slack.opendatacube.org/>`_. If you would like to report an issue with this repo, or suggest feature requests, you can `open an issue on this repository <https://github.com/GeoscienceAustralia/dea-waterbodies/issues>`_. Non-technical questions about Digital Earth Australia Waterbodies can be sent to dea@ga.gov.au. 
 
 **Citing Digital Earth Australia Waterbodies:**
+
     Krause, Claire E.; Newey, Vanessa; Alger, Matthew J.; Lymburner, Leo. 2021. "Mapping and Monitoring the Multi-Decadal Dynamics of Australia’s Open Waterbodies Using Landsat" Remote Sens. 13, no. 8: 1437. https://doi.org/10.3390/rs13081437
 
 ----------
