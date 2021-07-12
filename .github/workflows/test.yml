@@ -1,0 +1,39 @@
+name: Test
+
+on: [push]
+
+env:
+  ORG: geoscienceaustralia
+  IMAGE: dea-waterbodies
+  METADATA_CATALOG: https://raw.githubusercontent.com/GeoscienceAustralia/dea-config/a4f39b485b33608a016032d9987251881fec4b6f/workspaces/sandbox-metadata.yaml
+  PRODUCT_CATALOG: https://raw.githubusercontent.com/GeoscienceAustralia/dea-config/a4f39b485b33608a016032d9987251881fec4b6f/workspaces/sandbox-products.csv
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Pre-pull layers
+      run: docker-compose pull
+      
+      
+    - name: Activate Docker cache
+      uses: satackey/action-docker-layer-caching@v0.0.8
+      # Ignore the failure of a step and avoid terminating the job.
+      continue-on-error: true
+
+    - name: Build dea-waterbodies image
+      run: |
+        docker-compose build
+    
+    - name: Test dea-waterbodies image
+      run: |
+          docker-compose up -d
+          ./setup_test_datacube.sh
+          docker-compose exec -T waterbodies bash -c "pytest ."
+          docker-compose down
+      
+    

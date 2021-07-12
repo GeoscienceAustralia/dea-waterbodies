@@ -1,0 +1,19 @@
+name: dea-waterbodies-env
+channels:
+  - defaults
+  - conda-forge
+  - anaconda
+dependencies:
+  - numpy
+  - geopandas
+  - gdal
+  - boto3
+  - s3fs
+  - pip:
+    - datacube
+    - fsspec
+    - python-geohash
+    - rioxarray
+    - rasterstats
+    - --extra-index-url="https://packages.dea.ga.gov.au"
+    - odc-apps-dc-tools

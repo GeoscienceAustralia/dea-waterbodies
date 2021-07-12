@@ -1,0 +1,7 @@
+; config_moree_test.ini
+[DEFAULT]
+SHAPEFILE=s3://dea-public-data/projects/WaterBodies/moree-test/AusWaterBodies_Moree.shp
+OUTPUTDIR=s3://dea-public-data-dev/waterbodies/moree-test/timeseries-aws/
+TIME_SPAN=ALL
+MISSING_ONLY=FALSE
+SIZE=SMALL
