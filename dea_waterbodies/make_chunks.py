@@ -7,9 +7,11 @@ Geoscience Australia
 
 import configparser
 import json
+import os.path
 from pathlib import Path
 import tempfile
 from urllib.request import urlopen
+import uuid
 
 import click
 import fsspec
@@ -29,6 +31,22 @@ def get_dbf_from_config(config_path) -> str:
     shp_path = config['SHAPEFILE']
     dbf_path = shp_path.replace('shp', 'dbf')
     return dbf_path
+
+
+def get_output_path_from_config(config_path) -> str:
+    """Find the output path based on a config.
+
+    Must return a string, not a Path, in case there's a protocol.
+    """
+    # Download the config file.
+    with urlopen(config_path) as config_file:
+        parser = configparser.ConfigParser()
+        parser.read_string(config_file.read().decode('ascii'))
+    config = parser['DEFAULT']
+    out_dir = config['OUTPUTDIR']
+    out_fname = os.path.split(config_path)[-1] + '_' + \
+        str(uuid.uuid4()) + '.json'
+    return os.path.join(out_dir, out_fname)
 
 
 def get_areas_and_ids(dbf_path):
@@ -107,9 +125,12 @@ def alloc_chunks(area_ids, n_chunks):
 @click.argument('n_chunks', type=int)
 def main(config_path, n_chunks):
     dbf_path = get_dbf_from_config(config_path)
+    out_path = get_output_path_from_config(config_path)
     area_ids = get_areas_and_ids(dbf_path)
     out = alloc_chunks(area_ids, n_chunks)
-    print(json.dumps({'chunks': out}))
+    with fsspec.open(out_path, 'w') as f:
+        json.dump({'chunks': out}, f)
+    print(out_path)
 
 
 if __name__ == "__main__":
