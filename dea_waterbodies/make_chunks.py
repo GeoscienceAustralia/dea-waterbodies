@@ -130,7 +130,7 @@ def main(config_path, n_chunks):
     out = alloc_chunks(area_ids, n_chunks)
     with fsspec.open(out_path, 'w') as f:
         json.dump({'chunks': out}, f)
-    print(json.dumps({'chunks_path': out_path}))
+    print(json.dumps({'chunks_path': out_path}), end='')
 
 
 if __name__ == "__main__":
