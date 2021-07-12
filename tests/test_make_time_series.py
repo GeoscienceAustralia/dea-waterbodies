@@ -90,7 +90,6 @@ def test_make_one_csv(tmp_path, run_main):
     assert csv.columns[2] == 'Wet pixel count (n = 1358)'
     assert csv.iloc[0]['Observation Date'].startswith('2000-02-02')
     assert int(csv.iloc[0]['Wet pixel count (n = 1358)']) == 1205
-    assert not RE_IDS_STRING.match('r3dp84s8n, r3dp84s8n, r3dp84s8n,')
 
 
 def test_make_one_csv_stdin(tmp_path, run_main):
