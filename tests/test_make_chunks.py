@@ -59,9 +59,16 @@ def bytesopen(path):
     return open(path, 'rb')
 
 
+def test_get_config_from_s3(config_path_s3):
+    with mock.patch('dea_waterbodies.make_chunks.urlopen', wraps=bytesopen):
+        config = make_chunks.parse_config(config_path_s3)
+        assert config.get('OUTPUTDIR')
+
+
 def test_get_dbf_from_config(config_path):
     with mock.patch('dea_waterbodies.make_chunks.urlopen', wraps=bytesopen):
-        dbf_path = make_chunks.get_dbf_from_config(config_path)
+        config = make_chunks.parse_config(config_path)
+        dbf_path = make_chunks.get_dbf_from_config(config)
     assert dbf_path == TEST_DBF
 
 
@@ -70,7 +77,8 @@ def test_get_dbf_from_config_s3(config_path_s3):
     # This was treated as a local path somehow with the error:
     # No such file or directory: '/code/s3:/file.dbf'
     with mock.patch('dea_waterbodies.make_chunks.urlopen', wraps=bytesopen):
-        dbf_path = make_chunks.get_dbf_from_config(config_path_s3)
+        config = make_chunks.parse_config(config_path_s3)
+        dbf_path = make_chunks.get_dbf_from_config(config)
     assert dbf_path == TEST_DBF_S3
 
 
