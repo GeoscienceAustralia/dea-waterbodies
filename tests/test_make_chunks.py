@@ -74,8 +74,8 @@ def test_get_dbf_from_config_s3(config_path_s3):
     assert dbf_path == TEST_DBF_S3
 
 
-def test_get_areas_and_ids():
-    contexts = make_chunks.get_areas_and_ids(TEST_DBF)
+def test_get_contexts():
+    contexts = make_chunks.get_polygon_context(TEST_DBF)
     assert len(contexts) == N_TEST_POLYGONS
     # Lake Burley Griffin
     lbg, = [c for c in contexts if c.uid == 'r3dp1nxh8']
