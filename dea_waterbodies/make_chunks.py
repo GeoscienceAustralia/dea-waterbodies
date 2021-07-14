@@ -19,40 +19,28 @@ import click
 import fsspec
 from osgeo import ogr
 
-from dea_waterbodies.make_time_series import get_shapes
-
 logger = logging.getLogger(__name__)
 
 PolygonContext = namedtuple('PolygonContext', 'area uid state')
 
 
-def get_dbf_from_config(config_path) -> str:
+def get_dbf_from_config(config: dict) -> str:
     """Find the DBF file specified in a config.
 
     Must return a string, not a Path, in case there's a protocol.
     """
-    # Download the config file to find the shapefile.
-    with urlopen(config_path) as config_file:
-        parser = configparser.ConfigParser()
-        parser.read_string(config_file.read().decode('ascii'))
-    config = parser['DEFAULT']
     shp_path = config['SHAPEFILE']
     dbf_path = shp_path.replace('shp', 'dbf')
     return dbf_path
 
 
-def get_output_path_from_config(config_path) -> str:
+def get_output_path_from_config(config: dict) -> str:
     """Find the output path based on a config.
 
     Must return a string, not a Path, in case there's a protocol.
     """
-    # Download the config file.
-    with urlopen(config_path) as config_file:
-        parser = configparser.ConfigParser()
-        parser.read_string(config_file.read().decode('ascii'))
-    config = parser['DEFAULT']
     out_dir = config['OUTPUTDIR']
-    out_fname = os.path.split(config_path)[-1] + '_' + \
+    out_fname = os.path.split(config)[-1] + '_' + \
         str(uuid.uuid4()) + '.json'
     return os.path.join(out_dir, out_fname)
 
@@ -167,14 +155,30 @@ def alloc_chunks(contexts, n_chunks):
     return out
 
 
+def parse_config(config_path: str):
+    with urlopen(config_path) as config_file:
+        parser = configparser.ConfigParser()
+        parser.read_string(config_file.read().decode('ascii'))
+    return parser['DEFAULT']
+
+
 @click.command()
 @click.argument('config_path')
 @click.argument('n_chunks', type=int)
 def main(config_path, n_chunks):
-    dbf_path = get_dbf_from_config(config_path)
+    config = parse_config(config_path)
+    dbf_path = get_dbf_from_config(config)
     out_path = get_output_path_from_config(config_path)
     contexts = get_polygon_context(dbf_path)
-    out = alloc_chunks(contexts, n_chunks)
+    missing_only = config['MISSING_ONLY']
+    if not isinstance(missing_only, bool):
+        missing_only = missing_only.upper() == 'TRUE'
+    assert isinstance(missing_only, bool)
+    filter_state = config.get('FILTER_STATE', None)
+    filtered = filter_polygons_by_context(
+        contexts, config['OUTPUTDIR'],
+        missing_only, filter_state)
+    out = alloc_chunks(filtered, n_chunks)
     with fsspec.open(out_path, 'w') as f:
         json.dump({'chunks': out}, f)
     print(json.dumps({'chunks_path': out_path}), end='')
