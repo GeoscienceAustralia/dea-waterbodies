@@ -116,28 +116,28 @@ def filter_polygons_by_context(
     return missing_filtered
 
 
-def alloc_chunks(area_ids, n_chunks):
+def alloc_chunks(contexts, n_chunks):
     """Allocate waterbodies to chunks with estimated memory usage."""
     # Split the waterbodies up by area. First, sort (by area):
-    area_ids.sort(reverse=True)
+    contexts.sort(key=lambda c: c.area, reverse=True)
     # Get the total area as we'll be dividing into chunks based on this.
-    total_area = sum(a for a, i in area_ids)
+    total_area = sum(c.area for c in contexts)
 
     area_budget = total_area / n_chunks
     # Divide the areas into chunks.
     area_chunks = []
     current_area_budget = 0
     current_area_chunk = []
-    to_alloc = area_ids[::-1]
+    to_alloc = contexts[::-1]
     while to_alloc:
-        area, id_ = to_alloc.pop()
-        current_area_budget += area
-        current_area_chunk.append(id_)
+        context = to_alloc.pop()
+        current_area_budget += context.area
+        current_area_chunk.append(context.uid)
         if current_area_budget >= area_budget:
             current_area_budget = 0
             area_chunks.append(current_area_chunk)
             current_area_chunk = []
-            total_area = sum(a for a, _ in to_alloc)
+            total_area = sum(c.area for c in to_alloc)
             n_remaining_chunks = n_chunks - len(area_chunks)
             if n_remaining_chunks == 0 and to_alloc:
                 raise RuntimeError('Not enough chunks remaining')
@@ -149,7 +149,7 @@ def alloc_chunks(area_ids, n_chunks):
         area_chunks.append([])
 
     # Estimate memory usage for each chunk.
-    id_to_area = dict([i[::-1] for i in area_ids])
+    id_to_area = {c.uid: c.area for c in contexts}
 
     def est_mem(id_):
         # Found this number empirically

@@ -130,7 +130,7 @@ def test_filter_state():
         for s in all_states:
             res = make_chunks.filter_polygons_by_context(
                 contexts, '/', False, 'SA')
-            assert not any(c.state == s for c in res)
+            assert all(c.state == s for c in res)
         # Test not filtering by state
         res = make_chunks.filter_polygons_by_context(
             contexts, '/', False, None)
