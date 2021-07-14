@@ -62,7 +62,7 @@ def bytesopen(path):
 def test_get_config_from_s3(config_path_s3):
     with mock.patch('dea_waterbodies.make_chunks.urlopen', wraps=bytesopen):
         config = make_chunks.parse_config(config_path_s3)
-        assert config.get('OUTPUTDIR')
+        assert config.get('SHAPEFILE')
 
 
 def test_get_dbf_from_config(config_path):
