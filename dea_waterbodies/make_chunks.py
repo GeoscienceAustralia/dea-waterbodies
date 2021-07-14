@@ -168,7 +168,7 @@ def parse_config(config_path: str):
 def main(config_path, n_chunks):
     config = parse_config(config_path)
     dbf_path = get_dbf_from_config(config)
-    out_path = get_output_path_from_config(config_path)
+    out_path = get_output_path_from_config(config)
     contexts = get_polygon_context(dbf_path)
     missing_only = config['MISSING_ONLY']
     if not isinstance(missing_only, bool):
