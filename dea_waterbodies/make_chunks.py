@@ -173,8 +173,8 @@ def alloc_chunks(contexts, n_chunks):
 def main(config_path, n_chunks):
     dbf_path = get_dbf_from_config(config_path)
     out_path = get_output_path_from_config(config_path)
-    area_ids = get_areas_and_ids(dbf_path)
-    out = alloc_chunks(area_ids, n_chunks)
+    contexts = get_polygon_context(dbf_path)
+    out = alloc_chunks(contexts, n_chunks)
     with fsspec.open(out_path, 'w') as f:
         json.dump({'chunks': out}, f)
     print(json.dumps({'chunks_path': out_path}), end='')
