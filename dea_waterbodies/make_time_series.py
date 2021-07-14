@@ -127,6 +127,7 @@ def get_shapes(config_dict: dict,
         # I think it should be captured later. If this induces a bug,
         # here's a great place to start looking.
         # TODO(MatthewJA): Use Paths earlier on and don't convert here.
+        # TODO(MatthewJA): Why doesn't this break with S3 paths?
         output_dir = Path(config_dict['output_dir'])
         missing_list = []
         for id_ in wb_ids:

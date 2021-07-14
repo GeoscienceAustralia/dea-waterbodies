@@ -5,8 +5,10 @@ Geoscience Australia
 2021
 """
 
+from collections import namedtuple
 import configparser
 import json
+import logging
 import os.path
 from pathlib import Path
 import tempfile
@@ -16,6 +18,12 @@ import uuid
 import click
 import fsspec
 from osgeo import ogr
+
+from dea_waterbodies.make_time_series import get_shapes
+
+logger = logging.getLogger(__name__)
+
+PolygonContext = namedtuple('PolygonContext', 'area uid state')
 
 
 def get_dbf_from_config(config_path) -> str:
@@ -49,7 +57,7 @@ def get_output_path_from_config(config_path) -> str:
     return os.path.join(out_dir, out_fname)
 
 
-def get_areas_and_ids(dbf_path):
+def get_polygon_context(dbf_path):
     """Download and process a DBF."""
     # Can't use pathlib here in case we have an S3 URI instead of a local one.
     dbf_name = dbf_path.split('/')[-1]
@@ -62,11 +70,50 @@ def get_areas_and_ids(dbf_path):
 
         # Get the areas.
         ds = ogr.Open(str(dbf_dump_path), 0)
-        layer = ds.ExecuteSQL(f'select area, UID from {dbf_stem}')
-        area_ids = [(float(i.GetField('area')), i.GetField('UID'))
+        layer = ds.ExecuteSQL(f'select area, UID, state from {dbf_stem}')
+        area_ids = [PolygonContext(
+                     float(i.GetField('area')),
+                     i.GetField('UID'),
+                     i.GetField('state'))
                     for i in layer]
 
     return area_ids
+
+
+def construct_path(output_path: str, uid: str):
+    """Construct the path to a waterbody CSV."""
+    # TODO(MatthewJA): Move this somewhere more general.
+    return os.path.join(output_path, uid[:4], uid)
+
+
+def filter_polygons_by_context(
+        contexts: [PolygonContext],
+        output_path: str,
+        missing_only: bool,
+        filter_state: str or None):
+    """Filter polygons based on their properties."""
+    state_filtered = [
+        c for c in contexts
+        if not filter_state or c.state == filter_state]
+    # Now filter to see if the output file already exists.
+    if missing_only:
+        missing_filtered = []
+        for context in state_filtered:
+            path = construct_path(output_path, context.uid)
+            try:
+                with fsspec.open(path, 'r') as f:
+                    # This exists!
+                    logger.debug(f'{path} exists')
+                    continue
+            except FileNotFoundError:
+                missing_filtered.append(context)
+                continue
+
+            raise RuntimeError('Unreachable')
+    else:
+        missing_filtered = state_filtered
+
+    return missing_filtered
 
 
 def alloc_chunks(area_ids, n_chunks):

@@ -111,3 +111,28 @@ def test_alloc_chunks_fuzz():
             n_chunks,
             len(chunks),
         )
+
+
+def test_filter_state():
+    """PolygonContexts are filtered by state."""
+    all_states = ['SA', 'VIC', 'OT']
+    random.seed(0)
+    for _ in range(10):
+        n_contexts = random.randrange(100, 1000)
+        uids = [str(random.randrange(100000))
+                for _ in range(n_contexts)]
+        states = [random.choice(all_states)
+                  for _ in range(n_contexts)]
+        contexts = [
+            make_chunks.PolygonContext(0, uid, state)
+            for uid, state in zip(uids, states)
+        ]
+        for s in all_states:
+            res = make_chunks.filter_polygons_by_context(
+                contexts, '/', False, 'SA')
+            assert not any(c.state == s for c in res)
+        # Test not filtering by state
+        res = make_chunks.filter_polygons_by_context(
+            contexts, '/', False, None)
+        assert len(res) == len(contexts)
+        assert all(c1 == c2 for c1, c2 in zip(res, contexts))
