@@ -34,13 +34,13 @@ def get_dbf_from_config(config: dict) -> str:
     return dbf_path
 
 
-def get_output_path_from_config(config: dict) -> str:
+def get_output_path_from_config(config_path: str, config: dict) -> str:
     """Find the output path based on a config.
 
     Must return a string, not a Path, in case there's a protocol.
     """
     out_dir = config['OUTPUTDIR']
-    out_fname = os.path.split(config)[-1] + '_' + \
+    out_fname = os.path.split(config_path)[-1] + '_' + \
         str(uuid.uuid4()) + '.json'
     return os.path.join(out_dir, out_fname)
 
@@ -168,7 +168,7 @@ def parse_config(config_path: str):
 def main(config_path, n_chunks):
     config = parse_config(config_path)
     dbf_path = get_dbf_from_config(config)
-    out_path = get_output_path_from_config(config)
+    out_path = get_output_path_from_config(config_path, config)
     contexts = get_polygon_context(dbf_path)
     missing_only = config['MISSING_ONLY']
     if not isinstance(missing_only, bool):
