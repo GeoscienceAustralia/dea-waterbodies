@@ -28,9 +28,15 @@ RUN apt-get update \
          wget \
          curl \
          nano \
+         unzip \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /tmp
+
+# Install AWS CLI
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+RUN unzip awscliv2.zip
+RUN ./aws/install
 
 ARG py_env_path
 COPY --from=env_builder $py_env_path $py_env_path
@@ -47,4 +53,4 @@ RUN pip install --use-feature=2020-resolver --extra-index-url="https://packages.
 RUN env && echo $PATH && pip freeze && pip check
 
 # Make sure it's working
-# RUN dea-waterbodies --version
+RUN waterbodies-ts --version

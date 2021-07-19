@@ -5,8 +5,10 @@ Geoscience Australia
 2021
 """
 
+from collections import namedtuple
 import configparser
 import json
+import logging
 import os.path
 from pathlib import Path
 import tempfile
@@ -17,39 +19,33 @@ import click
 import fsspec
 from osgeo import ogr
 
+logger = logging.getLogger(__name__)
 
-def get_dbf_from_config(config_path) -> str:
+PolygonContext = namedtuple('PolygonContext', 'area uid state')
+
+
+def get_dbf_from_config(config: dict) -> str:
     """Find the DBF file specified in a config.
 
     Must return a string, not a Path, in case there's a protocol.
     """
-    # Download the config file to find the shapefile.
-    with urlopen(config_path) as config_file:
-        parser = configparser.ConfigParser()
-        parser.read_string(config_file.read().decode('ascii'))
-    config = parser['DEFAULT']
     shp_path = config['SHAPEFILE']
     dbf_path = shp_path.replace('shp', 'dbf')
     return dbf_path
 
 
-def get_output_path_from_config(config_path) -> str:
+def get_output_path_from_config(config_path: str, config: dict) -> str:
     """Find the output path based on a config.
 
     Must return a string, not a Path, in case there's a protocol.
     """
-    # Download the config file.
-    with urlopen(config_path) as config_file:
-        parser = configparser.ConfigParser()
-        parser.read_string(config_file.read().decode('ascii'))
-    config = parser['DEFAULT']
     out_dir = config['OUTPUTDIR']
     out_fname = os.path.split(config_path)[-1] + '_' + \
         str(uuid.uuid4()) + '.json'
     return os.path.join(out_dir, out_fname)
 
 
-def get_areas_and_ids(dbf_path):
+def get_polygon_context(dbf_path):
     """Download and process a DBF."""
     # Can't use pathlib here in case we have an S3 URI instead of a local one.
     dbf_name = dbf_path.split('/')[-1]
@@ -62,35 +58,74 @@ def get_areas_and_ids(dbf_path):
 
         # Get the areas.
         ds = ogr.Open(str(dbf_dump_path), 0)
-        layer = ds.ExecuteSQL(f'select area, UID from {dbf_stem}')
-        area_ids = [(float(i.GetField('area')), i.GetField('UID'))
+        layer = ds.ExecuteSQL(f'select area, UID, state from {dbf_stem}')
+        area_ids = [PolygonContext(
+                     float(i.GetField('area')),
+                     i.GetField('UID'),
+                     i.GetField('state'))
                     for i in layer]
 
     return area_ids
 
 
-def alloc_chunks(area_ids, n_chunks):
+def construct_path(output_path: str, uid: str):
+    """Construct the path to a waterbody CSV."""
+    # TODO(MatthewJA): Move this somewhere more general.
+    return os.path.join(output_path, uid[:4], uid)
+
+
+def filter_polygons_by_context(
+        contexts: [PolygonContext],
+        output_path: str,
+        missing_only: bool,
+        filter_state: str or None):
+    """Filter polygons based on their properties."""
+    state_filtered = [
+        c for c in contexts
+        if not filter_state or c.state == filter_state]
+    # Now filter to see if the output file already exists.
+    if missing_only:
+        missing_filtered = []
+        for context in state_filtered:
+            path = construct_path(output_path, context.uid)
+            try:
+                with fsspec.open(path, 'r') as f:
+                    # This exists!
+                    logger.debug(f'{path} exists')
+                    continue
+            except FileNotFoundError:
+                missing_filtered.append(context)
+                continue
+
+            raise RuntimeError('Unreachable')
+    else:
+        missing_filtered = state_filtered
+
+    return missing_filtered
+
+
+def alloc_chunks(contexts, n_chunks):
     """Allocate waterbodies to chunks with estimated memory usage."""
     # Split the waterbodies up by area. First, sort (by area):
-    area_ids.sort(reverse=True)
+    contexts.sort(key=lambda c: c.area, reverse=True)
     # Get the total area as we'll be dividing into chunks based on this.
-    total_area = sum(a for a, i in area_ids)
+    total_area = sum(c.area for c in contexts)
 
     area_budget = total_area / n_chunks
     # Divide the areas into chunks.
     area_chunks = []
     current_area_budget = 0
     current_area_chunk = []
-    to_alloc = area_ids[::-1]
+    to_alloc = contexts[::-1]
     while to_alloc:
-        area, id_ = to_alloc.pop()
-        current_area_budget += area
-        current_area_chunk.append(id_)
+        context = to_alloc.pop()
+        current_area_budget += context.area
+        current_area_chunk.append(context.uid)
         if current_area_budget >= area_budget:
             current_area_budget = 0
             area_chunks.append(current_area_chunk)
             current_area_chunk = []
-            total_area = sum(a for a, _ in to_alloc)
+            total_area = sum(c.area for c in to_alloc)
             n_remaining_chunks = n_chunks - len(area_chunks)
             if n_remaining_chunks == 0 and to_alloc:
                 raise RuntimeError('Not enough chunks remaining')
@@ -102,7 +137,7 @@ def alloc_chunks(area_ids, n_chunks):
         area_chunks.append([])
 
     # Estimate memory usage for each chunk.
-    id_to_area = dict([i[::-1] for i in area_ids])
+    id_to_area = {c.uid: c.area for c in contexts}
 
     def est_mem(id_):
         # Found this number empirically
@@ -120,17 +155,33 @@ def alloc_chunks(area_ids, n_chunks):
     return out
 
 
+def parse_config(config_path: str):
+    with urlopen(config_path) as config_file:
+        parser = configparser.ConfigParser()
+        parser.read_string(config_file.read().decode('ascii'))
+    return parser['DEFAULT']
+
+
 @click.command()
 @click.argument('config_path')
 @click.argument('n_chunks', type=int)
 def main(config_path, n_chunks):
-    dbf_path = get_dbf_from_config(config_path)
-    out_path = get_output_path_from_config(config_path)
-    area_ids = get_areas_and_ids(dbf_path)
-    out = alloc_chunks(area_ids, n_chunks)
+    config = parse_config(config_path)
+    dbf_path = get_dbf_from_config(config)
+    out_path = get_output_path_from_config(config_path, config)
+    contexts = get_polygon_context(dbf_path)
+    missing_only = config['MISSING_ONLY']
+    if not isinstance(missing_only, bool):
+        missing_only = missing_only.upper() == 'TRUE'
+    assert isinstance(missing_only, bool)
+    filter_state = config.get('FILTER_STATE', None)
+    filtered = filter_polygons_by_context(
+        contexts, config['OUTPUTDIR'],
+        missing_only, filter_state)
+    out = alloc_chunks(filtered, n_chunks)
     with fsspec.open(out_path, 'w') as f:
         json.dump({'chunks': out}, f)
-    print(json.dumps({'chunks_path': out_path}))
+    print(json.dumps({'chunks_path': out_path}), end='')
 
 
 if __name__ == "__main__":

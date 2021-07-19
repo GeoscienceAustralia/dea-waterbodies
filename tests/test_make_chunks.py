@@ -59,9 +59,16 @@ def bytesopen(path):
     return open(path, 'rb')
 
 
+def test_get_config_from_s3(config_path_s3):
+    with mock.patch('dea_waterbodies.make_chunks.urlopen', wraps=bytesopen):
+        config = make_chunks.parse_config(config_path_s3)
+        assert config.get('SHAPEFILE')
+
+
 def test_get_dbf_from_config(config_path):
     with mock.patch('dea_waterbodies.make_chunks.urlopen', wraps=bytesopen):
-        dbf_path = make_chunks.get_dbf_from_config(config_path)
+        config = make_chunks.parse_config(config_path)
+        dbf_path = make_chunks.get_dbf_from_config(config)
     assert dbf_path == TEST_DBF
 
 
@@ -70,22 +77,25 @@ def test_get_dbf_from_config_s3(config_path_s3):
     # This was treated as a local path somehow with the error:
     # No such file or directory: '/code/s3:/file.dbf'
     with mock.patch('dea_waterbodies.make_chunks.urlopen', wraps=bytesopen):
-        dbf_path = make_chunks.get_dbf_from_config(config_path_s3)
+        config = make_chunks.parse_config(config_path_s3)
+        dbf_path = make_chunks.get_dbf_from_config(config)
     assert dbf_path == TEST_DBF_S3
 
 
-def test_get_areas_and_ids():
-    area_ids = make_chunks.get_areas_and_ids(TEST_DBF)
-    assert len(area_ids) == N_TEST_POLYGONS
+def test_get_contexts():
+    contexts = make_chunks.get_polygon_context(TEST_DBF)
+    assert len(contexts) == N_TEST_POLYGONS
     # Lake Burley Griffin
-    lbg, = [(a, i) for a, i in area_ids if i == 'r3dp1nxh8']
+    lbg, = [c for c in contexts if c.uid == 'r3dp1nxh8']
     # Check that areas match to within 10 m^2
-    assert round(lbg[0]) // 10 == 6478750 // 10
+    assert round(lbg.area) // 10 == 6478750 // 10
 
 
 def test_alloc_chunks():
-    area_ids = [(100, 'a'), (200, 'b'), (100, 'c')]
-    chunks = make_chunks.alloc_chunks(area_ids, 2)
+    contexts = [(100, 'a'), (200, 'b'), (100, 'c')]
+    contexts = [make_chunks.PolygonContext(a, i, 'NSW')
+                for a, i in contexts]
+    chunks = make_chunks.alloc_chunks(contexts, 2)
     assert len(chunks) == 2
     assert chunks[0]['ids'] == ['b']
     assert sorted(chunks[1]['ids']) == sorted(['a', 'c'])
@@ -93,8 +103,10 @@ def test_alloc_chunks():
 
 def test_alloc_chunks_insufficient_polygons():
     """Less polygons than chunks."""
-    area_ids = [(100, 'a'), (200, 'b'), (100, 'c')]
-    chunks = make_chunks.alloc_chunks(area_ids, 4)
+    contexts = [(100, 'a'), (200, 'b'), (100, 'c')]
+    contexts = [make_chunks.PolygonContext(a, i, 'NSW')
+                for a, i in contexts]
+    chunks = make_chunks.alloc_chunks(contexts, 4)
     assert len(chunks) == 4
 
 
@@ -104,10 +116,38 @@ def test_alloc_chunks_fuzz():
     for _ in range(100):
         n_poly = random.randrange(2, 1500)
         n_chunks = random.randrange(1, 150)
-        area_ids = [(random.randrange(1, 10000), str(uuid.uuid4()))
-                    for _ in range(n_poly)]
-        chunks = make_chunks.alloc_chunks(area_ids, n_chunks)
+        contexts = [make_chunks.PolygonContext(
+                random.randrange(1, 10000),
+                str(uuid.uuid4()),
+                'QLD')
+            for _ in range(n_poly)]
+        chunks = make_chunks.alloc_chunks(contexts, n_chunks)
         assert len(chunks) == n_chunks, 'Expected {} chunks, got {}'.format(
             n_chunks,
             len(chunks),
         )
+
+
+def test_filter_state():
+    """PolygonContexts are filtered by state."""
+    all_states = ['SA', 'VIC', 'OT']
+    random.seed(0)
+    for _ in range(10):
+        n_contexts = random.randrange(100, 1000)
+        uids = [str(random.randrange(100000))
+                for _ in range(n_contexts)]
+        states = [random.choice(all_states)
+                  for _ in range(n_contexts)]
+        contexts = [
+            make_chunks.PolygonContext(0, uid, state)
+            for uid, state in zip(uids, states)
+        ]
+        for s in all_states:
+            res = make_chunks.filter_polygons_by_context(
+                contexts, '/', False, s)
+            assert all(c.state == s for c in res)
+        # Test not filtering by state
+        res = make_chunks.filter_polygons_by_context(
+            contexts, '/', False, None)
+        assert len(res) == len(contexts)
+        assert all(c1 == c2 for c1, c2 in zip(res, contexts))
