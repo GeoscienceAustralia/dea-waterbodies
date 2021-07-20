@@ -121,7 +121,7 @@ def test_make_one_csv_sqs(tmp_path, run_main):
     queue_name = 'waterbodies-test-queue'
     queue = sqs.create_queue(QueueName=queue_name)
     ginninderra_id = 'r3dp84s8n'
-    queue.write_message(ginninderra_id)
+    queue.send_message(ginninderra_id)
     result = run_main([
         '--from-queue', queue_name,
         '--shapefile', TEST_SHP,
