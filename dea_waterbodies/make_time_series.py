@@ -353,7 +353,7 @@ def main(ids, config, shapefile, start, end, size,
         # From queue
         import boto3
 
-        sqs = boto3.client('sqs')
+        sqs = boto3.resource('sqs')
         queue = sqs.get_queue_by_name(QueueName=from_queue)
 
         while True:
