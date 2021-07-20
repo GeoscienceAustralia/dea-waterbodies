@@ -370,8 +370,8 @@ def main(ids, config, shapefile, start, end, size,
                 break
 
             entries = [
-                {'Id': msg['MessageId'],
-                 'ReceiptHandle': msg['ReceiptHandle']}
+                {'Id': msg.message_id,
+                 'ReceiptHandle': msg.receipt_handle}
                 for msg in messages
             ]
 
