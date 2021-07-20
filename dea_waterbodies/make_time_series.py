@@ -194,7 +194,8 @@ def main(ids, config, shapefile, start, end, size,
     loggers = [logging.getLogger(name)
                for name in logging.root.manager.loggerDict
                if not name.startswith('fiona')
-               and not name.startswith('sqlalchemy')]
+               and not name.startswith('sqlalchemy')
+               and not name.startswith('boto')]
     stdout_hdlr = logging.StreamHandler(sys.stdout)
     for logger in loggers:
         if verbose == 0:
@@ -362,9 +363,9 @@ def main(ids, config, shapefile, start, end, size,
                 MaxNumberOfMessages=1,
             )
 
-            try:
-                messages = response['Messages']
-            except KeyError:
+            messages = response
+
+            if len(messages) == 0:
                 logger.info('No messages received from queue')
                 break
 
