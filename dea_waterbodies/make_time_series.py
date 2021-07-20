@@ -370,14 +370,13 @@ def main(ids, config, shapefile, start, end, size,
                 break
 
             entries = [
-                {'Body': msg['Body'],
-                 'Id': msg['MessageId'],
+                {'Id': msg['MessageId'],
                  'ReceiptHandle': msg['ReceiptHandle']}
                 for msg in messages
             ]
 
             # Process each ID.
-            ids = [e['Body'] for e in entries]
+            ids = [e.body for e in messages]
             logger.info(f'Read {ids} from queue')
             shapes = get_shapes(config_dict, ids, id_field)
             logger.info(f'Found {len(shapes)} polygons for processing, '
@@ -387,20 +386,21 @@ def main(ids, config, shapefile, start, end, size,
             # wet area, and wet pixel count.
             # Attempt each polygon 2 times.
             for i, (entry, shape) in enumerate(zip(entries, shapes)):
+                id_ = shape['properties'][id_field]
                 logger.info('Processing {} ({}/{})'.format(
-                    shape['properties'][id_field],
+                    id_,
                     i + 1,
                     len(shapes)))
                 result = dw_wtf.generate_wb_timeseries(shape, config_dict)
                 if not result:
                     logger.info('Retrying {}'.format(
-                        shape['properties'][id_field]
+                        id_
                     ))
                     result = dw_wtf.generate_wb_timeseries(shape, config_dict)
 
                 # Delete from queue.
                 if result:
-                    logger.info(f'Successful, deleting {entry["Id"]}')
+                    logger.info(f'Successful, deleting {id_}')
                     resp = queue.delete_messages(
                         QueueUrl=from_queue, Entries=[entry],
                     )
