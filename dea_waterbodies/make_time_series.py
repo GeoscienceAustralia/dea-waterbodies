@@ -182,11 +182,13 @@ def get_shapes(config_dict: dict,
               default=None)
 @click.option('--no-mask-obs/--mask-obs', default=False)
 @click.option('--all/--some', default=False)
+@click.option('--from-queue', default=None,
+              help='Name of AWS SQS to read from instead of [ids]')
 @click.option('-v', '--verbose', count=True)
 @click.version_option(version=dea_waterbodies.__version__)
 def main(ids, config, shapefile, start, end, size,
          missing_only, skip, time_span, output, state,
-         no_mask_obs, all, verbose):
+         no_mask_obs, all, from_queue, verbose):
     """Make the waterbodies time series."""
     # Set up logging.
     loggers = [logging.getLogger(name)
@@ -201,6 +203,8 @@ def main(ids, config, shapefile, start, end, size,
             logger.setLevel(logging.INFO)
         elif verbose == 2:
             logger.setLevel(logging.DEBUG)
+        else:
+            raise click.ClickException('Maximum verbosity is -vv')
         logger.addHandler(stdout_hdlr)
 
     # If we've specified a config file, load it in.
@@ -266,16 +270,21 @@ def main(ids, config, shapefile, start, end, size,
     assert config_dict['size'].isupper()
 
     # Process the IDs. If we have some, then read them and split.
+    if ids and from_queue:
+        raise click.ClickException(
+            'If --from-queue then no IDs should be specified')
+
     if ids:
         ids = ids.split(',')
         if all:
             logger.warning('Ignoring --all since IDs are specified')
-    elif not ids and all:
+    elif (not ids and all) or (not ids and from_queue):
         ids = None  # Handled later in get_shapes
     else:
         assert not ids
         assert not all
         # Read IDs from stdin.
+        logger.debug('Reading IDs from stdin')
         ids = []
         for line in sys.stdin:
             line = line.strip()
@@ -288,9 +297,13 @@ def main(ids, config, shapefile, start, end, size,
 
             ids.append(line)
 
-    logger.debug('Processing IDs: {}'.format(
-        repr(ids)
-    ))
+    if not from_queue:
+        logger.debug('Processing IDs: {}'.format(
+            repr(ids)
+        ))
+    else:
+        assert not ids
+        logger.debug(f'Reading from queue {from_queue}')
 
     # Do the import here so that the CLI is fast,
     # because this import is sloooow.
@@ -305,33 +318,100 @@ def main(ids, config, shapefile, start, end, size,
     config_dict['id_field'] = id_field
     logger.debug(f'Guessed ID field: {id_field}')
 
-    # Open the shapefile and get the list of polygons.
-    shapes = get_shapes(config_dict, ids, id_field)
-    logger.info(f'Found {len(shapes)} polygons for processing, '
-                f'out of a possible {len(ids)} (from ids list).')
-
     logger.info('Configuration:')
     for key in sorted(config_dict):
         logger.info(f'\t{key}={config_dict[key]}')
 
-    # Loop through the polygons and write out a CSV of wet percentage,
-    # wet area, and wet pixel count.
-    # Attempt each polygon 2 times.
-    logger.info('Beginning processing.')
-    for i, shape in enumerate(shapes):
-        logger.info('Processing {} ({}/{})'.format(
-            shape['properties'][id_field],
-            i + 1,
-            len(shapes)))
-        result = dw_wtf.generate_wb_timeseries(shape, config_dict)
-        if not result:
-            logger.info('Retrying {}'.format(
-                shape['properties'][id_field]
-            ))
+    # IF WE ARE READING FROM A QUEUE:
+    # -> loop until nothing is on the queue
+    # IF WE ARE NOT READING FROM A QUEUE:
+    # -> Use existing IDs
+
+    if not from_queue:
+        # Open the shapefile and get the list of polygons.
+        shapes = get_shapes(config_dict, ids, id_field)
+        logger.info(f'Found {len(shapes)} polygons for processing, '
+                    f'out of a possible {len(ids)} (from ids list).')
+
+        # Loop through the polygons and write out a CSV of wet percentage,
+        # wet area, and wet pixel count.
+        # Attempt each polygon 2 times.
+        logger.info('Beginning processing.')
+        for i, shape in enumerate(shapes):
+            logger.info('Processing {} ({}/{})'.format(
+                shape['properties'][id_field],
+                i + 1,
+                len(shapes)))
             result = dw_wtf.generate_wb_timeseries(shape, config_dict)
+            if not result:
+                logger.info('Retrying {}'.format(
+                    shape['properties'][id_field]
+                ))
+                result = dw_wtf.generate_wb_timeseries(shape, config_dict)
+
+    else:
+        # From queue
+        import boto3
+
+        sqs = boto3.client('sqs')
+        queue = sqs.get_queue_by_name(QueueName=from_queue)
+
+        while True:
+            response = queue.receive_messages(
+                AttributeNames=['All'],
+                MaxNumberOfMessages=1,
+            )
+
+            try:
+                messages = response['Messages']
+            except KeyError:
+                logger.info('No messages received from queue')
+                break
+
+            entries = [
+                {'Body': msg['Body'],
+                 'Id': msg['MessageId'],
+                 'ReceiptHandle': msg['ReceiptHandle']}
+                for msg in messages
+            ]
+
+            # Process each ID.
+            ids = [e['Body'] for e in entries]
+            logger.info(f'Read {ids} from queue')
+            shapes = get_shapes(config_dict, ids, id_field)
+            logger.info(f'Found {len(shapes)} polygons for processing, '
+                        f'out of a possible {len(ids)} (from ids list).')
+
+            # Loop through the polygons and write out a CSV of wet percentage,
+            # wet area, and wet pixel count.
+            # Attempt each polygon 2 times.
+            for i, (entry, shape) in enumerate(zip(entries, shapes)):
+                logger.info('Processing {} ({}/{})'.format(
+                    shape['properties'][id_field],
+                    i + 1,
+                    len(shapes)))
+                result = dw_wtf.generate_wb_timeseries(shape, config_dict)
+                if not result:
+                    logger.info('Retrying {}'.format(
+                        shape['properties'][id_field]
+                    ))
+                    result = dw_wtf.generate_wb_timeseries(shape, config_dict)
+
+                # Delete from queue.
+                if result:
+                    logger.info(f'Successful, deleting {entry["Id"]}')
+                    resp = queue.delete_messages(
+                        QueueUrl=from_queue, Entries=[entry],
+                    )
+
+                    if len(resp['Successful']) != 1:
+                        raise RuntimeError(
+                            f"Failed to delete message: {entry}"
+                        )
+
     logger.info('Processing complete.')
 
-    return 1
+    return 0
 
 
 if __name__ == "__main__":
