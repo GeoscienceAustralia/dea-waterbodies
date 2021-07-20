@@ -3,8 +3,10 @@ from pathlib import Path
 import re
 import sys
 
+import boto3
 from click.testing import CliRunner
 import geopandas as gpd
+from moto import mock_sqs
 import pytest
 
 from dea_waterbodies.make_time_series import main, RE_IDS_STRING, RE_ID
@@ -99,6 +101,33 @@ def test_make_one_csv_stdin(tmp_path, run_main):
         '--output', tmp_path,
         '-vv',
     ], input=f'{ginninderra_id}\n')
+    assert result
+    expected_out_path = tmp_path / ginninderra_id[:4] / f'{ginninderra_id}.csv'
+    assert expected_out_path.exists()
+    csv = gpd.pd.read_csv(expected_out_path, sep=',')
+    assert csv.columns[0] == 'Observation Date'
+    assert csv.columns[1] == 'Wet pixel percentage'
+    assert re.match(r'Wet pixel count \(n = \d+\)', csv.columns[2])
+    assert csv.columns[2] == 'Wet pixel count (n = 1358)'
+    assert csv.iloc[0]['Observation Date'].startswith('2000-02-02')
+    assert int(csv.iloc[0]['Wet pixel count (n = 1358)']) == 1205
+
+
+@mock_sqs
+def test_make_one_csv_sqs(tmp_path, run_main):
+    """Integration test for IDs passed from SQS."""
+    # Set up the SQS in moto.
+    sqs = boto3.resource('sqs')
+    queue_name = 'waterbodies-test-queue'
+    queue = sqs.create_queue(QueueName=queue_name)
+    ginninderra_id = 'r3dp84s8n'
+    queue.write_message(ginninderra_id)
+    result = run_main([
+        '--from-queue', queue_name,
+        '--shapefile', TEST_SHP,
+        '--output', tmp_path,
+        '-vv',
+    ])
     assert result
     expected_out_path = tmp_path / ginninderra_id[:4] / f'{ginninderra_id}.csv'
     assert expected_out_path.exists()
