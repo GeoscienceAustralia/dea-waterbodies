@@ -148,7 +148,7 @@ def generate_wb_timeseries(shapes, config_dict):
                 query['dataset_maturity'] = dataset_maturity
             logger.debug('Query: {}'.format({k: v for k, v in query.items()
                                              if k != 'geopolygon'}))
-            wofl = dc.load(product='wofs_albers', group_by='solar_day',
+            wofl = dc.load(product=wofls, group_by='solar_day',
                            fuse_func=wofls_fuser, **query)
 
             if len(wofl.attrs) == 0:

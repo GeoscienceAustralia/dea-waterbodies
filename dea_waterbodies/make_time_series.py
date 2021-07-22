@@ -112,6 +112,7 @@ def guess_id_field(shapefile_path) -> str:
         # In order of preference.
         'UID', 'WB_ID', 'FID_1', 'FID', 'ID', 'OBJECTID',
     ]
+    possible_guesses += [k.lower() for k in possible_guesses]
     for guess in possible_guesses:
         if guess in keys:
             return guess
@@ -149,12 +150,12 @@ def get_shapes(config_dict: dict,
     # Filter the list of shapes to include only specified polygons,
     # possibly constrained to a state.
     filtered_shapes = []
-    wb_ids = set(wb_ids)  # for quick membership lookups
+    wb_ids = set(wb_ids or [])  # for quick membership lookups
     config_state = config_dict.get('filter_state')
     with fiona.open(config_dict['shape_file']) as shapes:
         for shape in shapes:
             wb_id = shape['properties'][id_field]
-            if wb_id not in wb_ids:
+            if wb_ids and wb_id not in wb_ids:
                 logger.debug(f'Rejecting {wb_id} (not in wb_ids)')
                 continue
 
@@ -379,7 +380,7 @@ def main(ids, config, shapefile, start, end, missing_only,
         # Open the shapefile and get the list of polygons.
         shapes = get_shapes(config_dict, ids, id_field)
         logger.info(f'Found {len(shapes)} polygons for processing, '
-                    f'out of a possible {len(ids)} (from ids list).')
+                    f'out of a possible {len(ids or [])} (from ids list).')
 
         # Loop through the polygons and write out a CSV of wet percentage,
         # wet area, and wet pixel count.
