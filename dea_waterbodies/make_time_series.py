@@ -166,28 +166,65 @@ def get_shapes(config_dict: dict,
 
 @click.command()
 @click.argument('ids', required=False, default='')
-@click.option('--config', '-c', type=click.Path(), default=None)
-@click.option('--shapefile', type=click.Path(), default=None)
-@click.option('--start', type=str, default=None)
-@click.option('--end', type=str, default=None)
-@click.option('--size', type=click.Choice(['ALL', 'SMALL', 'HUGE']),
-              default='ALL')
-@click.option('--missing-only/--not-missing-only', default=False)
-@click.option('--skip', type=click.Path(), default=None)
+@click.option('--config', '-c', type=click.Path(), default=None,
+              help='Path to a config.ini file. A config file can be provided '
+              'instead of using the command line options provided.')
+@click.option('--shapefile', type=click.Path(), default=None,
+              help='REQUIRED. If --config specifies a shapefile, you do not '
+              'need to provide it again here. Path to the waterbody polygon '
+              'shapefile (or geojson) you want to run the time series '
+              'generation for.')
+@click.option('--output', type=click.Path(), default=None,
+              help='REQUIRED. If --config specifies an output, you do not '
+              'need to provide it again here. Path to the output directory '
+              'for the waterbody timeseries.')
 @click.option('--time-span', type=click.Choice(['ALL', 'APPEND', 'CUSTOM']),
-              default='ALL')
-@click.option('--output', type=click.Path(), default=None)
+              default='ALL',
+              help='sets the time range for the waterbody '
+              'timeseries queries. --time-span will default to ALL if no '
+              'other option is specified. If you select APPEND, then only '
+              'times since the latest dates in the waterbody timeseries will '
+              'be run. If --time-span = CUSTOM, then --start and --start must '
+              'also be specified.')
+@click.option('--start', type=str, default=None,
+              help='Date string. E.g. 2019-01-01. '
+              'The start date for the waterbody timeseries query. If --start '
+              'is provided --end must also be provided.')
+@click.option('--end', type=str, default=None,
+              help='Date string. E.g. 2019-12-01. '
+              'The end date for the waterbody timeseries query. If --end is '
+              'provided --start must also be provided.')
+@click.option('--missing-only/--not-missing-only', default=False,
+              help='Specifies whether you want to only run '
+              'waterbody polygons that DO NOT already have a .csv file '
+              'in the --output directory. The default option is to run '
+              'every waterbody polygon in the --shapefile file, and overwrite '
+              'any existing csv files.')
 @click.option('--state', type=click.Choice(
                 ['ACT', 'NSW', 'NT', 'OT', 'QLD', 'SA', 'TAS', 'VIC', 'WA']),
-              default=None)
-@click.option('--no-mask-obs/--mask-obs', default=False)
-@click.option('--all/--some', default=False)
+              default=None,
+              help='Run the analysis for selected '
+              'Australian states only. This option requires that each polygon '
+              'have an attribute called "STATE" that specifies one of the '
+              'specified state options.')
+@click.option('--no-mask-obs/--mask-obs', default=False,
+              help='Option to include uncertainties in the '
+              'output timeseries. if you specify --no-mask-obs then you will '
+              'only filter out timesteps with 100% invalid pixels. You will '
+              'also record the number invalid pixels per timestep.')
+@click.option('--all/--some', default=False,
+              help='Option to run a subset of the polygons in '
+              'the --shapefile, or --all of them (default). If --some, you '
+              'must also provide a list of ids using the ids argument.')
 @click.option('-v', '--verbose', count=True)
 @click.version_option(version=dea_waterbodies.__version__)
-def main(ids, config, shapefile, start, end, size,
-         missing_only, skip, time_span, output, state,
-         no_mask_obs, all, verbose):
-    """Make the waterbodies time series."""
+def main(ids, config, shapefile, start, end, missing_only, 
+         time_span, output, state, no_mask_obs, all, verbose):
+    """
+    Make the waterbodies time series. \n
+    Args: \n
+    ids    List of ids to process if --some flag is used.
+    """
     # Set up logging.
     loggers = [logging.getLogger(name)
                for name in logging.root.manager.loggerDict
@@ -227,9 +264,9 @@ def main(ids, config, shapefile, start, end, size,
         'shapefile': 'shape_file',
         'start': 'start_dt',
         'end': 'end_date',
-        'size': 'size',
+        #'size': 'size',  # not currently implemented
         'missing_only': 'missing_only',
-        'skip': 'processed_file',
+        #'skip': 'processed_file',  # not currently implemented
         'time_span': 'time_span',
         'output': 'output_dir',
         'state': 'filter_state',
@@ -263,7 +300,7 @@ def main(ids, config, shapefile, start, end, size,
             'If --end is specified then --start must also be specified')
     # These comparisons should probably be case-insensitive anyway, but
     # confirm here just to be sure.
-    assert config_dict['size'].isupper()
+    #assert config_dict['size'].isupper()  # not currently implemented
 
     # Process the IDs. If we have some, then read them and split.
     if ids:
