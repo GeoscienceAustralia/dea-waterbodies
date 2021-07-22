@@ -212,7 +212,7 @@ def get_shapes(config_dict: dict,
               'output timeseries. if you specify --no-mask-obs then you will '
               'only filter out timesteps with 100% invalid pixels. You will '
               'also record the number invalid pixels per timestep.')
-@click.option('--all/--some', default=True,
+@click.option('--all/--some', default=False,
               help='Option to run a subset of the polygons in '
               'the --shapefile, or --all of them (default). If --some, you '
               'must also provide a list of ids using the ids argument.')
