@@ -42,6 +42,23 @@ def wofls_fuser(dest, src):
     return dest
 
 
+def get_resolution(wofls):
+    """Get the resolution for a WOfLs product."""
+    resolutions = {
+        'ga_ls_wo_3': (-30, 30),
+        'wofs_albers': (-25, 25),
+        'ga_s2_wo_3': (-10, 10),
+    }
+    return resolutions[wofls]
+
+
+def get_dataset_maturity(wofls):
+    """Get the dataset_maturity flag for a WOfLs product."""
+    if wofls == 'ga_s2_wo_3':
+        return 'interim'
+    return None
+
+
 # Define a function that does all of the work
 def generate_wb_timeseries(shapes, config_dict):
     """
@@ -70,6 +87,12 @@ def generate_wb_timeseries(shapes, config_dict):
     id_field = config_dict['id_field']
     time_span = config_dict['time_span']
     include_uncertainty = config_dict['include_uncertainty']
+    wofls = config_dict['wofls']
+    assert wofls
+
+    # Some query parameters will be different for different WOfL products.
+    output_res = get_resolution(wofls)
+    dataset_maturity = get_dataset_maturity(wofls)
 
     if include_uncertainty:
         unknown_percent_threshold = 100
@@ -118,7 +141,11 @@ def generate_wb_timeseries(shapes, config_dict):
             invalid_observations = []
 
             # Set up the query, and load in all of the WOFS layers
-            query = {'geopolygon': geom, 'time': time}
+            query = {'geopolygon': geom, 'time': time,
+                     'output_crs': crs, 'resolution': output_res,
+                     'resampling': 'nearest'}
+            if dataset_maturity:
+                query['dataset_maturity'] = dataset_maturity
             logger.debug('Query: {}'.format({k: v for k, v in query.items()
                                              if k != 'geopolygon'}))
             wofl = dc.load(product='wofs_albers', group_by='solar_day',

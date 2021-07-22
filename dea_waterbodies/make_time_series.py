@@ -87,6 +87,11 @@ def process_config(config_file: Path) -> dict:
     else:
         config_dict['include_uncertainty'] = False
 
+    if 'WOFLS' in config['DEFAULT'].keys():
+        config['WOFLS'] = config['DEFAULT']['WOFLS']
+    else:
+        config['WOFLS'] = 'wofs_albers'
+
     return config_dict
 
 
@@ -218,11 +223,13 @@ def get_shapes(config_dict: dict,
               'must also provide a list of ids using the ids argument.')
 @click.option('--from-queue', default=None,
               help='Name of AWS SQS to read from instead of [ids]')
+@click.option('--wofls', default=None,
+              help='Name of WOfLs product; default wofs_albers')
 @click.option('-v', '--verbose', count=True)
 @click.version_option(version=dea_waterbodies.__version__)
-def main(ids, config, shapefile, start, end, missing_only, 
+def main(ids, config, shapefile, start, end, missing_only,
          time_span, output, state, no_mask_obs, all,
-         from_queue, verbose):
+         from_queue, wofls, verbose):
     """
     Make the waterbodies time series. \n
     Args: \n
@@ -270,13 +277,14 @@ def main(ids, config, shapefile, start, end, missing_only,
         'shapefile': 'shape_file',
         'start': 'start_dt',
         'end': 'end_date',
-        #'size': 'size',  # not currently implemented
+        # 'size': 'size',  # not currently implemented
         'missing_only': 'missing_only',
-        #'skip': 'processed_file',  # not currently implemented
+        # 'skip': 'processed_file',  # not currently implemented
         'time_span': 'time_span',
         'output': 'output_dir',
         'state': 'filter_state',
         'no_mask_obs': 'include_uncertainty',
+        'wofls': 'wofls',
     }
     locals_ = locals()
     for cli_p, config_p in override_param_map.items():
@@ -366,6 +374,7 @@ def main(ids, config, shapefile, start, end, missing_only,
     # IF WE ARE NOT READING FROM A QUEUE:
     # -> Use existing IDs
 
+    logger.info(f'Using WOfLs product {config_dict["wofls"]}')
     if not from_queue:
         # Open the shapefile and get the list of polygons.
         shapes = get_shapes(config_dict, ids, id_field)
@@ -381,12 +390,14 @@ def main(ids, config, shapefile, start, end, missing_only,
                 shape['properties'][id_field],
                 i + 1,
                 len(shapes)))
-            result = dw_wtf.generate_wb_timeseries(shape, config_dict)
+            result = dw_wtf.generate_wb_timeseries(
+                shape, config_dict)
             if not result:
                 logger.info('Retrying {}'.format(
                     shape['properties'][id_field]
                 ))
-                result = dw_wtf.generate_wb_timeseries(shape, config_dict)
+                result = dw_wtf.generate_wb_timeseries(
+                    shape, config_dict)
 
     else:
         # From queue
@@ -422,19 +433,14 @@ def main(ids, config, shapefile, start, end, missing_only,
 
             # Loop through the polygons and write out a CSV of wet percentage,
             # wet area, and wet pixel count.
-            # Attempt each polygon 2 times.
             for i, (entry, shape) in enumerate(zip(entries, shapes)):
                 id_ = shape['properties'][id_field]
                 logger.info('Processing {} ({}/{})'.format(
                     id_,
                     i + 1,
                     len(shapes)))
-                result = dw_wtf.generate_wb_timeseries(shape, config_dict)
-                if not result:
-                    logger.info('Retrying {}'.format(
-                        id_
-                    ))
-                    result = dw_wtf.generate_wb_timeseries(shape, config_dict)
+                result = dw_wtf.generate_wb_timeseries(
+                    shape, config_dict)
 
                 # Delete from queue.
                 if result:
