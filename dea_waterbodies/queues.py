@@ -40,20 +40,20 @@ def make(name, timeout, deadletter, retries):
             'max_attempts': retries,
         }))
 
-    redrive_policy = {}
+    attributes = dict(
+            VisibilityTimeout=str(timeout))
     if deadletter:
         # Get ARN from queue name.
         deadletter_queue = sqs.get_queue_by_name(
             QueueName=deadletter,
         )
         deadletter_arn = deadletter_queue.attributes['QueueArn']
-        redrive_policy['deadLetterTargetArn'] = deadletter_arn
+        attributes['RedrivePolicy'] = json.dumps(
+            {'deadLetterTargetArn': deadletter_arn})
 
     queue = sqs.create_queue(
         QueueName=name,
-        Attributes=dict(
-            RedrivePolicy=json.dumps(redrive_policy),
-            VisibilityTimeout=str(timeout)))
+        Attributes=attributes)
 
     return queue.attributes['QueueArn']
 
