@@ -17,7 +17,7 @@ REQUIRES_PYTHON = '>=3.6.0'
 REQUIRED = [
     'datacube', 'geopandas', 'fsspec', 'numpy', 'python-geohash',
     'rioxarray', 'rasterstats', 'boto3', 's3fs', 'flake8',
-    'moto[sqs]',
+    'moto[sqs,s3]',
 ]
 
 # What packages are optional?

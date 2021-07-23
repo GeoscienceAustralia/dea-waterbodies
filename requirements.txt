@@ -10,6 +10,6 @@ boto3
 pytest
 rtree
 flake8
-moto[sqs]
+moto[sqs,s3]
 --extra-index-url https://packages.dea.ga.gov.au
 git+https://github.com/GeoscienceAustralia/dea-notebooks.git#subdirectory=Tools
