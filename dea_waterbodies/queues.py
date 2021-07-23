@@ -8,6 +8,7 @@ Geoscience Australia
 import json
 
 import boto3
+from botocore.config import Config
 import click
 
 
@@ -34,11 +35,12 @@ def make(name, timeout, deadletter, retries):
     """Make a queue."""
     verify_name(name)
 
-    sqs = boto3.resource('sqs')
+    sqs = boto3.client('sqs', config=Config(
+        retries={
+            'max_attempts': retries,
+        }))
 
-    redrive_policy = {
-        'maxReceiveCount': retries,
-    }
+    redrive_policy = {}
     if deadletter:
         # Get ARN from queue name.
         deadletter_queue = sqs.get_queue_by_name(
