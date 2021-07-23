@@ -7,7 +7,7 @@ Geoscience Australia
 
 import boto3
 from click.testing import CliRunner
-from botocore.exceptions import QueueDoesNotExist
+from botocore.exceptions import ClientError
 from moto import mock_sqs
 import pytest
 
@@ -37,7 +37,7 @@ def test_delete_queue():
         name,
     ], catch_exceptions=False)
     assert not res.exit_code, res.exception
-    with pytest.raises(QueueDoesNotExist):
+    with pytest.raises(ClientError):
         sqs.get_queue_by_name(QueueName=name)
 
 
