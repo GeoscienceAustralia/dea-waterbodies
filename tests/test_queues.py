@@ -6,8 +6,8 @@ Geoscience Australia
 """
 
 import boto3
-import click
 from click.testing import CliRunner
+from botocore.errorfactory import QueueDoesNotExist
 from moto import mock_sqs
 import pytest
 
@@ -37,7 +37,7 @@ def test_delete_queue():
         name,
     ], catch_exceptions=False)
     assert not res.exit_code, res.exception
-    with pytest.raises():
+    with pytest.raises(QueueDoesNotExist):
         sqs.get_queue_by_name(QueueName=name)
 
 
