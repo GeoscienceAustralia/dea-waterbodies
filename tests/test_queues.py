@@ -49,3 +49,13 @@ def test_make_queue_checks_name():
             'coastlines_'  # :)
         ])
     assert res.exit_code
+
+
+@mock_sqs
+def test_delete_queue_checks_name():
+    """queues.delete raises an exception if name doesn't have prefix."""
+    runner = CliRunner()
+    res = runner.invoke(queues.delete, [
+            'coastlines_'
+        ])
+    assert res.exit_code
