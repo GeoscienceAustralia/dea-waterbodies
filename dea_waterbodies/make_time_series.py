@@ -272,6 +272,10 @@ def main(ids, config, shapefile, start, end, missing_only,
                 ))
         config_dict = {}
 
+    logger.info('Parsed configuration file:')
+    for key in sorted(config_dict):
+        logger.info(f'\t{key}={config_dict[key]}')
+
     # Override config options with command-line options.
     # This dict maps CLI options to config params.
     override_param_map = {
