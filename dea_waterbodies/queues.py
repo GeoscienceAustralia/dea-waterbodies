@@ -49,8 +49,9 @@ def make(name, timeout, deadletter, retries):
 
     queue = sqs.create_queue(
         QueueName=name,
-        RedrivePolicy=json.dumps(redrive_policy),
-        VisibilityTimeout=timeout)
+        Attributes=dict(
+            RedrivePolicy=json.dumps(redrive_policy),
+            VisibilityTimeout=timeout))
 
     return queue.attributes['QueueArn']
 
