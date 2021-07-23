@@ -21,7 +21,7 @@ def test_make_queue():
     name = 'waterbodies_queue'
     res = runner.invoke(queues.make, [
         name,
-    ])
+    ], catch_exceptions=False)
     assert not res.exit_code, res.exception
     queue = sqs.get_queue_by_name(QueueName=name)
     assert queue
