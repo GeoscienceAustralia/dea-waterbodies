@@ -297,6 +297,9 @@ def main(ids, config, shapefile, start, end, missing_only,
         if cli_val or config_p not in config_dict:
             config_dict[config_p] = cli_val
 
+    if not config_dict['wofls']:
+        config_dict['wofls'] = 'wofs_albers'
+
     # Additional validation of parameters.
     # If time_span is CUSTOM, start and end should also be specified.
     if config_dict['time_span'] == 'CUSTOM':
