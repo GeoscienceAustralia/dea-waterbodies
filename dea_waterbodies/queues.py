@@ -51,7 +51,7 @@ def make(name, timeout, deadletter, retries):
         QueueName=name,
         Attributes=dict(
             RedrivePolicy=json.dumps(redrive_policy),
-            VisibilityTimeout=timeout))
+            VisibilityTimeout=str(timeout)))
 
     return queue.attributes['QueueArn']
 
