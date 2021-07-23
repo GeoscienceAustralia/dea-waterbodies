@@ -28,6 +28,20 @@ def test_make_queue():
 
 
 @mock_sqs
+def test_delete_queue():
+    runner = CliRunner()
+    sqs = boto3.resource('sqs')
+    name = 'waterbodies_queue'
+    sqs.create_queue(QueueName=name)
+    res = runner.invoke(queues.delete, [
+        name,
+    ], catch_exceptions=False)
+    assert not res.exit_code, res.exception
+    with pytest.raises():
+        sqs.get_queue_by_name(QueueName=name)
+
+
+@mock_sqs
 def test_make_queue_checks_name():
     """queues.make raises an exception if name doesn't have prefix."""
     runner = CliRunner()
