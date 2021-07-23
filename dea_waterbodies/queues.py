@@ -65,7 +65,7 @@ def delete(name):
     """Delete a queue."""
     verify_name(name)
     sqs = boto3.resource('sqs')
-    queue = sqs.get_queue_by_name(name)
+    queue = sqs.get_queue_by_name(QueueName=name)
     arn = queue.attributes['QueueArn']
     queue.delete()
     return arn
