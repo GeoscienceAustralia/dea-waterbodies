@@ -55,7 +55,8 @@ def make(name, timeout, deadletter, retries):
         QueueName=name,
         Attributes=attributes)
 
-    return queue.attributes['QueueArn']
+    assert queue
+    return 0
 
 
 @click.command()
