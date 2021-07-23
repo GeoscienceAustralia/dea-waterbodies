@@ -22,6 +22,7 @@ def test_make_queue():
     res = runner.invoke(queues.make, [
         name,
     ])
+    print(res.stdout)
 
     queue = sqs.get_queue_by_name(QueueName=name)
     assert not res.exit_code
