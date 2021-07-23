@@ -7,7 +7,7 @@ Geoscience Australia
 
 import boto3
 from click.testing import CliRunner
-from botocore.errorfactory import QueueDoesNotExist
+from botocore.exceptions import QueueDoesNotExist
 from moto import mock_sqs
 import pytest
 
