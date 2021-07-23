@@ -19,11 +19,12 @@ def test_make_queue():
     runner = CliRunner()
     sqs = boto3.resource('sqs')
     name = 'waterbodies_queue'
-    runner.invoke(queues.make, [
+    res = runner.invoke(queues.make, [
         name,
     ])
 
     queue = sqs.get_queue_by_name(QueueName=name)
+    assert not res.exit_code
     assert queue
 
 
@@ -31,7 +32,7 @@ def test_make_queue():
 def test_make_queue_checks_name():
     """queues.make raises an exception if name doesn't have prefix."""
     runner = CliRunner()
-    with pytest.raises(click.ClickException):
-        runner.invoke(queues.make, [
+    res = runner.invoke(queues.make, [
             'coastlines_'  # :)
         ])
+    assert res.exit_code
