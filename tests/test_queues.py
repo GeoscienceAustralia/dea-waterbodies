@@ -19,7 +19,8 @@ def test_make_queue():
     runner = CliRunner()
     sqs = boto3.resource('sqs')
     name = 'waterbodies_queue'
-    res = runner.invoke(queues.make, [
+    res = runner.invoke(queues.cli, [
+        'make',
         name,
     ], catch_exceptions=False)
     assert not res.exit_code, res.exception
@@ -33,7 +34,8 @@ def test_delete_queue():
     sqs = boto3.resource('sqs')
     name = 'waterbodies_queue'
     sqs.create_queue(QueueName=name)
-    res = runner.invoke(queues.delete, [
+    res = runner.invoke(queues.cli, [
+        'delete',
         name,
     ], catch_exceptions=False)
     assert not res.exit_code, res.exception
@@ -45,7 +47,8 @@ def test_delete_queue():
 def test_make_queue_checks_name():
     """queues.make raises an exception if name doesn't have prefix."""
     runner = CliRunner()
-    res = runner.invoke(queues.make, [
+    res = runner.invoke(queues.cli, [
+            'make',
             'coastlines_'  # :)
         ])
     assert res.exit_code
@@ -55,7 +58,8 @@ def test_make_queue_checks_name():
 def test_delete_queue_checks_name():
     """queues.delete raises an exception if name doesn't have prefix."""
     runner = CliRunner()
-    res = runner.invoke(queues.delete, [
+    res = runner.invoke(queues.cli, [
+            'delete',
             'coastlines_'
         ])
     assert res.exit_code

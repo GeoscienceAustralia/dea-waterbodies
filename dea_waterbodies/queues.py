@@ -18,7 +18,12 @@ def verify_name(name):
             'Waterbodies queues must start with waterbodies_')
 
 
-@click.command()
+@click.group(invoke_without_command=True)
+def cli(version):
+    pass
+
+
+@cli.command()
 @click.argument('name')
 @click.option(
     '--timeout', type=int,
@@ -59,7 +64,7 @@ def make(name, timeout, deadletter, retries):
     return 0
 
 
-@click.command()
+@cli.command()
 @click.argument('name')
 def delete(name):
     """Delete a queue."""
@@ -69,3 +74,7 @@ def delete(name):
     arn = queue.attributes['QueueArn']
     queue.delete()
     return arn
+
+
+if __name__ == "__main__":
+    cli()
