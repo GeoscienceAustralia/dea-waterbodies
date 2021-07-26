@@ -18,7 +18,7 @@ def verify_name(name):
             'Waterbodies queues must start with waterbodies_')
 
 
-@click.group(invoke_without_command=True)
+@click.group(invoke_without_command=False)
 def cli():
     pass
 
