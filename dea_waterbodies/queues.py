@@ -19,7 +19,7 @@ def verify_name(name):
 
 
 @click.group(invoke_without_command=True)
-def cli(version):
+def cli():
     pass
 
 
