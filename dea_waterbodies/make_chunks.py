@@ -89,7 +89,7 @@ def filter_polygons_by_context(
         for context in state_filtered:
             path = construct_path(output_path, context.uid)
             try:
-                with fsspec.open(path, 'r') as f:
+                with fsspec.open(path, 'r') as _:
                     # This exists!
                     logger.debug(f'{path} exists')
                     continue

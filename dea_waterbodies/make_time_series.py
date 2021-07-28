@@ -413,6 +413,7 @@ def main(ids, config, shapefile, start, end, missing_only,
 
         sqs = boto3.resource('sqs')
         queue = sqs.get_queue_by_name(QueueName=from_queue)
+        queue_url = queue.url
 
         while True:
             response = queue.receive_messages(
@@ -454,7 +455,7 @@ def main(ids, config, shapefile, start, end, missing_only,
                 if result:
                     logger.info(f'Successful, deleting {id_}')
                     resp = queue.delete_messages(
-                        QueueUrl=from_queue, Entries=[entry],
+                        QueueUrl=queue_url, Entries=[entry],
                     )
 
                     if len(resp['Successful']) != 1:
