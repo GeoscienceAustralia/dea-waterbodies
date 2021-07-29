@@ -88,9 +88,9 @@ def process_config(config_file: Path) -> dict:
         config_dict['include_uncertainty'] = False
 
     if 'WOFLS' in config['DEFAULT'].keys():
-        config['wofls'] = config['DEFAULT']['WOFLS']
+        config_dict['wofls'] = config['DEFAULT']['WOFLS']
     else:
-        config['wofls'] = 'wofs_albers'
+        config_dict['wofls'] = 'wofs_albers'
 
     return config_dict
 
