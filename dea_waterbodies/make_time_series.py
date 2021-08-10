@@ -245,11 +245,11 @@ def main(ids, config, shapefile, start, end, missing_only,
     stdout_hdlr = logging.StreamHandler(sys.stdout)
     for logger in loggers:
         if verbose == 0:
-            logger.setLevel(logging.WARNING)
+            logging.basicConfig(level=logging.WARNING)
         elif verbose == 1:
-            logger.setLevel(logging.INFO)
+            logging.basicConfig(level=logging.INFO)
         elif verbose == 2:
-            logger.setLevel(logging.DEBUG)
+            logging.basicConfig(level=logging.DEBUG)
         else:
             raise click.ClickException('Maximum verbosity is -vv')
         logger.addHandler(stdout_hdlr)
