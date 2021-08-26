@@ -125,7 +125,7 @@ def alloc_chunks(contexts, n_chunks):
             current_area_budget = 0
             area_chunks.append(current_area_chunk)
             current_area_chunk = []
-            total_area = sum(c.area for c in to_alloc)
+            total_area = sum(c.envelope.area for c in to_alloc)
             n_remaining_chunks = n_chunks - len(area_chunks)
             if n_remaining_chunks == 0 and to_alloc:
                 raise RuntimeError('Not enough chunks remaining')
