@@ -125,7 +125,7 @@ def alloc_chunks(contexts, n_chunks):
             current_area_budget = 0
             area_chunks.append(current_area_chunk)
             current_area_chunk = []
-            factor_of_safety = 4
+            factor_of_safety = 1
             total_area = sum(c.area for c in to_alloc)
             total_area *= factor_of_safety
             n_remaining_chunks = n_chunks - len(area_chunks)
