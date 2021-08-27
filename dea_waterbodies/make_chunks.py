@@ -94,7 +94,7 @@ def get_polygon_context(path, extent_area=True):
                 PolygonContext(
                     poly.geometry.envelope.area,
                     poly.UID,
-                    poly.state,
+                    poly.STATE,
                 )
             )
 
