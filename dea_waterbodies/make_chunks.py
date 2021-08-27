@@ -17,6 +17,7 @@ import uuid
 
 import click
 import fsspec
+import geopandas as gpd
 from osgeo import ogr
 
 logger = logging.getLogger(__name__)
@@ -45,25 +46,57 @@ def get_output_path_from_config(config_path: str, config: dict) -> str:
     return os.path.join(out_dir, out_fname)
 
 
-def get_polygon_context(dbf_path):
-    """Download and process a DBF."""
-    # Can't use pathlib here in case we have an S3 URI instead of a local one.
-    dbf_name = dbf_path.split('/')[-1]
-    dbf_stem = dbf_name.split('.')[0]
-    with tempfile.TemporaryDirectory() as tempdir:
-        with fsspec.open(dbf_path, 'rb') as f:
-            dbf_dump_path = Path(tempdir) / dbf_name
-            with open(dbf_dump_path, 'wb') as g:
-                g.write(f.read())
+def get_polygon_context(path, extent_area=True):
+    """Download and process a DBF or SHP.
+    
+    Arguments
+    ---------
+    path : str
+        Path to DBF or SHP file. Must be DBF if not extent_area
+        and must be SHP if extent_area.
+    
+    extent_area : bool
+        Default True. Whether to use the extent as the area
+        instead of the actual polygon area.
+    
+    Returns
+    -------
+    [PolygonContext]
+    """
+    if extent_area and not path.endswith('.shp'):
+        raise ValueError('If extent_area then path must be to a SHP.')
+    if not extent_area and not path.endswith('.dbf'):
+        raise ValueError('If not extent_area then path must be to a DBF.')
 
-        # Get the areas.
-        ds = ogr.Open(str(dbf_dump_path), 0)
-        layer = ds.ExecuteSQL(f'select area, UID, state from {dbf_stem}')
-        area_ids = [PolygonContext(
-                     float(i.GetField('area')),
-                     i.GetField('UID'),
-                     i.GetField('state'))
-                    for i in layer]
+    if not extent_area:
+        # Can't use pathlib here in case we have an S3 URI instead of a local one.
+        dbf_name = path.split('/')[-1]
+        dbf_stem = dbf_name.split('.')[0]
+        with tempfile.TemporaryDirectory() as tempdir:
+            with fsspec.open(path, 'rb') as f:
+                dbf_dump_path = Path(tempdir) / dbf_name
+                with open(dbf_dump_path, 'wb') as g:
+                    g.write(f.read())
+
+            # Get the areas.
+            ds = ogr.Open(str(dbf_dump_path), 0)
+            layer = ds.ExecuteSQL(f'select area, UID, state from {dbf_stem}')
+            area_ids = [PolygonContext(
+                        float(i.GetField('area')),
+                        i.GetField('UID'),
+                        i.GetField('state'))
+                        for i in layer]
+    else:
+        shp = gpd.read_file(path)
+        area_ids = []
+        for i, poly in shp.iterrows():
+            area_ids.append(
+                PolygonContext(
+                    poly.geometry.envelope.area,
+                    poly.UID,
+                    poly.state,
+                )
+            )
 
     return area_ids
 
@@ -169,9 +202,9 @@ def parse_config(config_path: str):
 @click.argument('n_chunks', type=int)
 def main(config_path, n_chunks):
     config = parse_config(config_path)
-    dbf_path = get_dbf_from_config(config)
+    shp_path = config['SHAPEFILE']
     out_path = get_output_path_from_config(config_path, config)
-    contexts = get_polygon_context(dbf_path)
+    contexts = get_polygon_context(shp_path, extent_area=True)
     missing_only = config['MISSING_ONLY']
     if not isinstance(missing_only, bool):
         missing_only = missing_only.upper() == 'TRUE'
