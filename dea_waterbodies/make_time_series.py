@@ -185,7 +185,7 @@ def get_shapes(config_dict: dict,
               'need to provide it again here. Path to the output directory '
               'for the waterbody timeseries.')
 @click.option('--time-span', type=click.Choice(['ALL', 'APPEND', 'CUSTOM']),
-              default='ALL',
+              default=None,
               help='sets the time range for the waterbody '
               'timeseries queries. --time-span will default to ALL if no '
               'other option is specified. If you select APPEND, then only '
@@ -295,6 +295,9 @@ def main(ids, config, shapefile, start, end, missing_only,
     for cli_p, config_p in override_param_map.items():
         cli_val = locals_[cli_p]
         if cli_val or config_p not in config_dict:
+            logger.info('Overriding config {} with value {}'.format(
+                config_p, cli_val,
+            ))
             config_dict[config_p] = cli_val
 
     if not config_dict['wofls']:
