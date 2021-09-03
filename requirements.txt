@@ -10,5 +10,5 @@ boto3
 pytest
 rtree
 flake8
-moto[sqs,s3]
+moto
 dea-tools
